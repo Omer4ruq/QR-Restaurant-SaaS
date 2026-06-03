@@ -2525,6 +2525,7 @@ function AdminDashboard({
                           </button>
                         )}
                       </div>
+                      
                       {selectedFloorTable ? (
                         <div className="mt-3 space-y-1.5 text-sm">
                           {[
