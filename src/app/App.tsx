@@ -1795,6 +1795,9 @@ function AdminDashboard({
   waiterCalled: boolean;
 }) {
   const [selectedTable, setSelectedTable] = useState<number | null>(null);
+  const [analyticsPeriod, setAnalyticsPeriod] = useState<
+    "Daily" | "Weekly" | "Monthly" | "Yearly"
+  >("Weekly");
 
   const statusColors = {
     available: "bg-emerald-100 border-emerald-200 text-emerald-700",
@@ -1981,6 +1984,219 @@ function AdminDashboard({
         tone: "text-emerald-300",
         icon: CheckCircle,
       })),
+  ];
+
+  const analyticsData = {
+    Daily: {
+      revenue: "₹42,380",
+      profit: "₹13,920",
+      cost: "₹28,460",
+      customers: 142,
+      avgOrder: "₹681",
+      margin: 33,
+      revenueTrend: [
+        { label: "11 AM", value: 18, amount: "₹2.8K", orders: 9, profit: "₹920" },
+        { label: "12 PM", value: 24, amount: "₹4.1K", orders: 14, profit: "₹1.3K" },
+        { label: "1 PM", value: 31, amount: "₹5.4K", orders: 18, profit: "₹1.8K" },
+        { label: "3 PM", value: 28, amount: "₹4.7K", orders: 15, profit: "₹1.4K" },
+        { label: "6 PM", value: 42, amount: "₹7.2K", orders: 24, profit: "₹2.3K" },
+        { label: "8 PM", value: 57, amount: "₹9.8K", orders: 31, profit: "₹3.2K" },
+        { label: "9 PM", value: 69, amount: "₹11.6K", orders: 37, profit: "₹3.9K" },
+        { label: "10 PM", value: 64, amount: "₹10.7K", orders: 34, profit: "₹3.5K" },
+      ],
+      customerTrend: [22, 28, 34, 31, 48, 64, 78, 72],
+      topProducts: [
+        { name: "Chicken Biryani", value: 95, revenue: "₹13,566" },
+        { name: "Garlic Naan", value: 88, revenue: "₹7,742" },
+        { name: "Butter Chicken", value: 78, revenue: "₹9,074" },
+      ],
+      badProducts: [
+        {
+          name: "Dal Makhani",
+          issue: "Slow prep and salt inconsistency",
+          fix: "Batch seasoning checklist and prep 20% earlier before dinner.",
+        },
+        {
+          name: "Masala Chai",
+          issue: "Served lukewarm during rush",
+          fix: "Keep a small hot batch ready from 6 PM to 9 PM.",
+        },
+      ],
+      payments: { cash: 38, online: 62 },
+      categories: [
+        { name: "Mains", pct: 92, revenue: "₹18.4K" },
+        { name: "Breads", pct: 74, revenue: "₹8.2K" },
+        { name: "Drinks", pct: 48, revenue: "₹4.1K" },
+        { name: "Desserts", pct: 35, revenue: "₹2.8K" },
+      ],
+      aiActions: [
+        "Push high-margin drinks with biryani combos tonight.",
+        "Prepare extra Garlic Naan dough before 7 PM peak.",
+        "Move slow chai service to a dedicated runner during rush.",
+      ],
+    },
+    Weekly: {
+      revenue: "₹2,84,600",
+      profit: "₹94,380",
+      cost: "₹1,90,220",
+      customers: 934,
+      avgOrder: "₹681",
+      margin: 34,
+      revenueTrend: [
+        { label: "Mon", value: 46, amount: "₹31K", orders: 112, profit: "₹9.8K" },
+        { label: "Tue", value: 52, amount: "₹36K", orders: 126, profit: "₹11.4K" },
+        { label: "Wed", value: 61, amount: "₹42K", orders: 141, profit: "₹13.1K" },
+        { label: "Thu", value: 58, amount: "₹39K", orders: 134, profit: "₹12.7K" },
+        { label: "Fri", value: 72, amount: "₹50K", orders: 162, profit: "₹16.5K" },
+        { label: "Sat", value: 88, amount: "₹61K", orders: 188, profit: "₹20.4K" },
+        { label: "Sun", value: 96, amount: "₹67K", orders: 171, profit: "₹22.4K" },
+      ],
+      customerTrend: [55, 62, 68, 64, 78, 90, 84],
+      topProducts: [
+        { name: "Chicken Biryani", value: 100, revenue: "₹1,13,316" },
+        { name: "Butter Chicken", value: 78, revenue: "₹80,619" },
+        { name: "Paneer Tikka", value: 60, revenue: "₹49,722" },
+      ],
+      badProducts: [
+        {
+          name: "Dal Makhani",
+          issue: "Guests mention less flavor after 9 PM",
+          fix: "Use smaller finishing batches and add final tempering per order.",
+        },
+        {
+          name: "Gulab Jamun",
+          issue: "Too sweet for repeat customers",
+          fix: "Offer mini portion and reduce syrup soak by 15%.",
+        },
+      ],
+      payments: { cash: 31, online: 69 },
+      categories: [
+        { name: "Mains", pct: 94, revenue: "₹1.32L" },
+        { name: "Biryani", pct: 86, revenue: "₹91K" },
+        { name: "Breads", pct: 66, revenue: "₹44K" },
+        { name: "Drinks", pct: 42, revenue: "₹22K" },
+      ],
+      aiActions: [
+        "Run a weekday family combo to lift Monday to Wednesday revenue.",
+        "Bundle low-cost drinks with top sellers to improve margin.",
+        "Reduce dessert stock on weekdays and shift to weekend prep.",
+      ],
+    },
+    Monthly: {
+      revenue: "₹11,42,800",
+      profit: "₹3,94,700",
+      cost: "₹7,48,100",
+      customers: 4180,
+      avgOrder: "₹704",
+      margin: 35,
+      revenueTrend: [
+        { label: "W1", value: 38, amount: "₹82K", orders: 314, profit: "₹27K" },
+        { label: "W2", value: 54, amount: "₹1.04L", orders: 382, profit: "₹35K" },
+        { label: "W3", value: 49, amount: "₹96K", orders: 361, profit: "₹31K" },
+        { label: "W4", value: 62, amount: "₹1.18L", orders: 428, profit: "₹40K" },
+        { label: "W5", value: 71, amount: "₹1.34L", orders: 476, profit: "₹45K" },
+        { label: "W6", value: 68, amount: "₹1.28L", orders: 451, profit: "₹43K" },
+        { label: "W7", value: 82, amount: "₹1.52L", orders: 523, profit: "₹52K" },
+        { label: "W8", value: 91, amount: "₹1.71L", orders: 590, profit: "₹59K" },
+        { label: "W9", value: 86, amount: "₹1.62L", orders: 558, profit: "₹55K" },
+        { label: "W10", value: 98, amount: "₹1.86L", orders: 697, profit: "₹64K" },
+      ],
+      customerTrend: [42, 58, 54, 63, 70, 74, 80, 88, 83, 92],
+      topProducts: [
+        { name: "Chicken Biryani", value: 96, revenue: "₹4.4L" },
+        { name: "Butter Chicken", value: 82, revenue: "₹3.1L" },
+        { name: "Garlic Naan", value: 74, revenue: "₹1.2L" },
+      ],
+      badProducts: [
+        {
+          name: "Masala Chai",
+          issue: "Low repeat rate after first order",
+          fix: "Improve aroma profile and promote as add-on, not standalone.",
+        },
+        {
+          name: "Chicken 65",
+          issue: "Complaint spike on oiliness",
+          fix: "Drain for 45 seconds and test air-fried premium variant.",
+        },
+      ],
+      payments: { cash: 27, online: 73 },
+      categories: [
+        { name: "Mains", pct: 91, revenue: "₹5.2L" },
+        { name: "Biryani", pct: 84, revenue: "₹3.7L" },
+        { name: "Starters", pct: 62, revenue: "₹1.6L" },
+        { name: "Desserts", pct: 38, revenue: "₹74K" },
+      ],
+      aiActions: [
+        "Create a premium biryani upsell for high-value weekends.",
+        "Retire or rework bottom 2 items before next month.",
+        "Negotiate chicken supplier rates, cost trend is rising.",
+      ],
+    },
+    Yearly: {
+      revenue: "₹1.38Cr",
+      profit: "₹47.2L",
+      cost: "₹90.8L",
+      customers: 48700,
+      avgOrder: "₹718",
+      margin: 34,
+      revenueTrend: [
+        { label: "Jan", value: 48, amount: "₹7.8L", orders: 3110, profit: "₹2.5L" },
+        { label: "Feb", value: 52, amount: "₹8.4L", orders: 3290, profit: "₹2.8L" },
+        { label: "Mar", value: 57, amount: "₹9.2L", orders: 3480, profit: "₹3.1L" },
+        { label: "Apr", value: 63, amount: "₹10.1L", orders: 3710, profit: "₹3.4L" },
+        { label: "May", value: 69, amount: "₹11.2L", orders: 3980, profit: "₹3.8L" },
+        { label: "Jun", value: 73, amount: "₹12.1L", orders: 4210, profit: "₹4.1L" },
+        { label: "Jul", value: 78, amount: "₹12.9L", orders: 4380, profit: "₹4.4L" },
+        { label: "Aug", value: 82, amount: "₹13.5L", orders: 4520, profit: "₹4.6L" },
+        { label: "Sep", value: 88, amount: "₹14.6L", orders: 4710, profit: "₹5.0L" },
+        { label: "Oct", value: 92, amount: "₹15.2L", orders: 4860, profit: "₹5.2L" },
+        { label: "Nov", value: 96, amount: "₹15.8L", orders: 5020, profit: "₹5.4L" },
+        { label: "Dec", value: 100, amount: "₹16.4L", orders: 5430, profit: "₹5.8L" },
+      ],
+      customerTrend: [44, 50, 53, 59, 66, 72, 74, 80, 84, 91, 93, 97],
+      topProducts: [
+        { name: "Chicken Biryani", value: 98, revenue: "₹48L" },
+        { name: "Butter Chicken", value: 83, revenue: "₹31L" },
+        { name: "Paneer Tikka", value: 72, revenue: "₹19L" },
+      ],
+      badProducts: [
+        {
+          name: "Dal Makhani",
+          issue: "Low margin despite decent orders",
+          fix: "Reduce cream waste and reposition as premium bowl combo.",
+        },
+        {
+          name: "Gulab Jamun",
+          issue: "Seasonal demand drops outside festivals",
+          fix: "Replace with rotating dessert specials in low months.",
+        },
+      ],
+      payments: { cash: 24, online: 76 },
+      categories: [
+        { name: "Mains", pct: 93, revenue: "₹58L" },
+        { name: "Biryani", pct: 88, revenue: "₹42L" },
+        { name: "Starters", pct: 64, revenue: "₹19L" },
+        { name: "Drinks", pct: 51, revenue: "₹11L" },
+      ],
+      aiActions: [
+        "Open second cloud-kitchen lane for biryani in high-demand areas.",
+        "Build loyalty campaigns around repeat dinner customers.",
+        "Use yearly low-margin data to simplify the menu by 12%.",
+      ],
+    },
+  };
+
+  const analytics = analyticsData[analyticsPeriod];
+  const maxTrend = Math.max(
+    ...analytics.revenueTrend.map((point) => point.value),
+    1,
+  );
+  const maxCustomerTrend = Math.max(...analytics.customerTrend, 1);
+  const foodProfitRows = [
+    { item: "Chicken Biryani", sold: 284, sales: "₹1,13,316", profit: "₹38,420" },
+    { item: "Butter Chicken", sold: 231, sales: "₹80,619", profit: "₹28,940" },
+    { item: "Garlic Naan", sold: 398, sales: "₹31,442", profit: "₹18,120" },
+    { item: "Paneer Tikka", sold: 178, sales: "₹49,722", profit: "₹16,870" },
   ];
 
   return (
@@ -2602,115 +2818,410 @@ function AdminDashboard({
           )}
 
           {tab === "analytics" && (
-            <div className="flex-1 p-6 overflow-y-auto">
-              <h2 className="text-xl font-semibold text-foreground mb-6">
-                Analytics
-              </h2>
-              <div className="grid grid-cols-4 gap-5 mb-6">
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="mb-6 flex items-center justify-between">
+                <div>
+                  <h2
+                    className="text-3xl font-medium text-foreground"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    AI Analytics Command Center
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Track revenue, customers, menu performance, payments, cost,
+                    profit, and AI growth opportunities.
+                  </p>
+                </div>
+                <div className="flex rounded-2xl border border-border bg-[#131C2F] p-1">
+                  {(["Daily", "Weekly", "Monthly", "Yearly"] as const).map(
+                    (period) => (
+                      <button
+                        key={period}
+                        onClick={() => setAnalyticsPeriod(period)}
+                        className={`rounded-xl px-4 py-2 text-xs font-semibold transition-colors ${
+                          analyticsPeriod === period
+                            ? "bg-primary text-[#0b1326]"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {period}
+                      </button>
+                    ),
+                  )}
+                </div>
+              </div>
+
+              <div className="mb-6 grid grid-cols-6 gap-4">
                 {[
                   {
-                    label: "Revenue this week",
-                    value: "₹2,84,600",
-                    change: "+18%",
+                    label: "Revenue",
+                    value: analytics.revenue,
+                    sub: "+18% growth",
+                    icon: DollarSign,
+                    tone: "text-emerald-400",
+                  },
+                  {
+                    label: "Profit",
+                    value: analytics.profit,
+                    sub: `${analytics.margin}% margin`,
                     icon: TrendingUp,
+                    tone: "text-primary",
                   },
                   {
-                    label: "Total orders today",
-                    value: "142",
-                    change: "+24 vs avg",
+                    label: "Customers",
+                    value: analytics.customers.toLocaleString(),
+                    sub: "AI demand tracked",
+                    icon: Users,
+                    tone: "text-sky-300",
+                  },
+                  {
+                    label: "Avg Order",
+                    value: analytics.avgOrder,
+                    sub: "Per table/order",
                     icon: Package,
+                    tone: "text-orange-300",
                   },
                   {
-                    label: "Top dish",
-                    value: "Chicken Biryani",
-                    change: "3,100 orders total",
-                    icon: Award,
-                  },
-                  {
-                    label: "Table turnover",
-                    value: "4.2 / day",
-                    change: "Sat avg: 5.1",
+                    label: "Cost",
+                    value: analytics.cost,
+                    sub: "Food + operations",
                     icon: Activity,
+                    tone: "text-red-300",
                   },
-                ].map((m) => (
+                  {
+                    label: "Online Pay",
+                    value: `${analytics.payments.online}%`,
+                    sub: "Cashless mix",
+                    icon: CheckCircle,
+                    tone: "text-emerald-300",
+                  },
+                ].map((metric) => (
                   <div
-                    key={m.label}
-                    className="bg-card border border-border rounded-2xl p-5"
+                    key={metric.label}
+                    className="rounded-2xl border border-border bg-[#131C2F] p-4"
                   >
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center">
-                        <m.icon className="w-4 h-4 text-[#0b1326]" />
+                    <div className="mb-3 flex items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10">
+                        <metric.icon className={`h-4 w-4 ${metric.tone}`} />
                       </div>
-                      <span className="text-sm text-muted-foreground">
-                        {m.label}
+                      <span className="text-xs text-muted-foreground">
+                        {metric.label}
                       </span>
                     </div>
-                    <div className="font-semibold text-foreground text-2xl font-mono">
-                      {m.value}
-                    </div>
-                    <div className="text-xs text-emerald-600 mt-1 font-medium">
-                      {m.change}
-                    </div>
+                    <p className="font-mono text-xl font-semibold text-foreground">
+                      {metric.value}
+                    </p>
+                    <p className={`mt-1 text-xs font-medium ${metric.tone}`}>
+                      {metric.sub}
+                    </p>
                   </div>
                 ))}
               </div>
-              <div className="bg-card border border-border rounded-2xl p-5">
-                <h3 className="font-semibold text-foreground mb-4 text-sm">
-                  Top 5 Items This Week
-                </h3>
-                {[
-                  {
-                    name: "Chicken Biryani",
-                    orders: 284,
-                    pct: 95,
-                    revenue: "₹1,13,316",
-                  },
-                  {
-                    name: "Butter Chicken",
-                    orders: 231,
-                    pct: 78,
-                    revenue: "₹80,619",
-                  },
-                  {
-                    name: "Garlic Naan",
-                    orders: 398,
-                    pct: 100,
-                    revenue: "₹31,442",
-                  },
-                  {
-                    name: "Paneer Tikka",
-                    orders: 178,
-                    pct: 60,
-                    revenue: "₹49,722",
-                  },
-                  {
-                    name: "Dal Makhani",
-                    orders: 134,
-                    pct: 45,
-                    revenue: "₹33,366",
-                  },
-                ].map((item) => (
-                  <div
-                    key={item.name}
-                    className="flex items-center gap-4 py-2.5 border-b border-border last:border-0"
-                  >
-                    <span className="text-sm text-foreground w-40 truncate">
-                      {item.name}
-                    </span>
-                    <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-primary rounded-full transition-all"
-                        style={{ width: `${item.pct}%` }}
-                      />
+
+              <div className="mb-6 grid grid-cols-12 gap-5">
+                <div className="col-span-5 rounded-2xl border border-border bg-card p-5">
+                  <div className="mb-4 flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-foreground">
+                        Revenue Trend
+                      </h3>
+                      <p className="text-xs text-muted-foreground">
+                        {analyticsPeriod} income movement
+                      </p>
                     </div>
-                    <span className="text-xs font-mono text-muted-foreground w-8 text-right">
-                      {item.orders}
-                    </span>
-                    <span className="text-xs font-mono text-primary w-20 text-right">
-                      {item.revenue}
-                    </span>
+                    <Badge color="green">AI Forecast: Up</Badge>
                   </div>
-                ))}
+                  <div className="mb-4 grid grid-cols-3 gap-3">
+                    <div className="rounded-xl bg-[#131C2F] p-3">
+                      <p className="text-[10px] uppercase text-muted-foreground">
+                        Total Revenue
+                      </p>
+                      <p className="font-mono text-sm text-primary">
+                        {analytics.revenue}
+                      </p>
+                    </div>
+                    <div className="rounded-xl bg-[#131C2F] p-3">
+                      <p className="text-[10px] uppercase text-muted-foreground">
+                        Orders
+                      </p>
+                      <p className="font-mono text-sm text-foreground">
+                        {analytics.revenueTrend.reduce(
+                          (sum, point) => sum + point.orders,
+                          0,
+                        )}
+                      </p>
+                    </div>
+                    <div className="rounded-xl bg-[#131C2F] p-3">
+                      <p className="text-[10px] uppercase text-muted-foreground">
+                        Profit
+                      </p>
+                      <p className="font-mono text-sm text-emerald-300">
+                        {analytics.profit}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="relative flex h-64 items-end gap-2 rounded-2xl bg-[#0B1326]/70 px-4 pb-8 pt-6">
+                    <div className="absolute inset-x-4 bottom-8 h-px bg-white/10" />
+                    {analytics.revenueTrend.map((point) => (
+                      <div
+                        key={point.label}
+                        className="group relative z-10 flex h-full flex-1 flex-col items-center justify-end"
+                      >
+                        <div className="pointer-events-none absolute bottom-[calc(100%+0.5rem)] hidden min-w-28 rounded-lg border border-primary/30 bg-[#0B1326] px-2 py-1 text-center shadow-xl group-hover:block">
+                          <p className="font-mono text-xs text-primary">{point.amount}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {point.orders} orders
+                          </p>
+                          <p className="text-[10px] text-emerald-300">
+                            {point.profit} profit
+                          </p>
+                        </div>
+                        <div className="mb-2 text-[10px] font-mono text-primary">
+                          {point.amount}
+                        </div>
+                        <div
+                          className="w-full rounded-t-xl bg-gradient-to-t from-primary/60 to-primary shadow-lg shadow-primary/10 transition-all group-hover:from-primary group-hover:to-primary/80"
+                          style={{
+                            height: `${Math.max((point.value / maxTrend) * 78, 24)}%`,
+                          }}
+                        />
+                        <span className="absolute -bottom-5 text-[10px] text-muted-foreground">
+                          {point.label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="col-span-4 rounded-2xl border border-border bg-card p-5">
+                  <div className="mb-4">
+                    <h3 className="font-semibold text-foreground">
+                      Customer Flow
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      AI-based footfall by {analyticsPeriod.toLowerCase()}
+                    </p>
+                  </div>
+                  <div className="space-y-3">
+                    {analytics.customerTrend.slice(0, 7).map((value, index) => (
+                      <div key={index}>
+                        <div className="mb-1 flex justify-between text-xs">
+                          <span className="text-muted-foreground">
+                            Slot {index + 1}
+                          </span>
+                          <span className="font-mono text-foreground">{value}</span>
+                        </div>
+                        <div className="h-2 overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full rounded-full bg-sky-400"
+                            style={{
+                              width: `${(value / maxCustomerTrend) * 100}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="col-span-3 rounded-2xl border border-border bg-card p-5">
+                  <h3 className="font-semibold text-foreground">Payment Mix</h3>
+                  <p className="mb-5 text-xs text-muted-foreground">
+                    Cash pay vs online pay
+                  </p>
+                  <div className="space-y-4">
+                    {[
+                      ["Online", analytics.payments.online, "bg-emerald-400"],
+                      ["Cash", analytics.payments.cash, "bg-primary"],
+                    ].map(([label, value, color]) => (
+                      <div key={label as string}>
+                        <div className="mb-1 flex justify-between text-sm">
+                          <span className="text-muted-foreground">{label}</span>
+                          <span className="font-mono text-foreground">
+                            {value as number}%
+                          </span>
+                        </div>
+                        <div className="h-3 overflow-hidden rounded-full bg-muted">
+                          <div
+                            className={`h-full rounded-full ${color}`}
+                            style={{ width: `${value}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-5 rounded-xl bg-emerald-500/10 p-3 text-xs text-emerald-300">
+                    Online payments reduce checkout delay and improve table
+                    turnover.
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-6 grid grid-cols-12 gap-5">
+                <div className="col-span-4 rounded-2xl border border-border bg-card p-5">
+                  <h3 className="font-semibold text-foreground">
+                    Top Selling Products
+                  </h3>
+                  <p className="mb-4 text-xs text-muted-foreground">
+                    AI-ranked by sales velocity and revenue
+                  </p>
+                  <div className="space-y-4">
+                    {analytics.topProducts.map((item) => (
+                      <div key={item.name}>
+                        <div className="mb-1 flex justify-between text-sm">
+                          <span className="text-foreground">{item.name}</span>
+                          <span className="font-mono text-primary">
+                            {item.revenue}
+                          </span>
+                        </div>
+                        <div className="h-2 overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full rounded-full bg-primary"
+                            style={{ width: `${item.value}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="col-span-4 rounded-2xl border border-red-900/40 bg-red-950/20 p-5">
+                  <h3 className="font-semibold text-red-200">
+                    Top Bad Products
+                  </h3>
+                  <p className="mb-4 text-xs text-red-200/60">
+                    AI complaint reasons and improvement suggestions
+                  </p>
+                  <div className="space-y-3">
+                    {analytics.badProducts.map((item) => (
+                      <div
+                        key={item.name}
+                        className="rounded-xl border border-red-900/40 bg-[#0B1326] p-3"
+                      >
+                        <div className="mb-1 flex items-center justify-between">
+                          <span className="font-medium text-red-200">
+                            {item.name}
+                          </span>
+                          <Badge color="red">Needs Fix</Badge>
+                        </div>
+                        <p className="text-xs text-red-200/70">{item.issue}</p>
+                        <p className="mt-2 text-xs text-primary">
+                          AI: {item.fix}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="col-span-4 rounded-2xl border border-border bg-card p-5">
+                  <h3 className="font-semibold text-foreground">
+                    Category Revenue
+                  </h3>
+                  <p className="mb-4 text-xs text-muted-foreground">
+                    Category-wise revenue performance
+                  </p>
+                  <div className="space-y-3">
+                    {analytics.categories.map((category) => (
+                      <div key={category.name}>
+                        <div className="mb-1 flex justify-between text-sm">
+                          <span className="text-muted-foreground">
+                            {category.name}
+                          </span>
+                          <span className="font-mono text-foreground">
+                            {category.revenue}
+                          </span>
+                        </div>
+                        <div className="h-2 overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full rounded-full bg-emerald-400"
+                            style={{ width: `${category.pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-12 gap-5">
+                <div className="col-span-5 rounded-2xl border border-border bg-card p-5">
+                  <h3 className="font-semibold text-foreground">
+                    Food Sales & Profit
+                  </h3>
+                  <p className="mb-4 text-xs text-muted-foreground">
+                    Date/week/month/year wise sold items and profit
+                  </p>
+                  <div className="space-y-2">
+                    {foodProfitRows.map((row) => (
+                      <div
+                        key={row.item}
+                        className="grid grid-cols-[1fr_60px_90px_90px] items-center gap-3 border-b border-border py-2 text-xs last:border-0"
+                      >
+                        <span className="text-foreground">{row.item}</span>
+                        <span className="font-mono text-muted-foreground">
+                          {row.sold}
+                        </span>
+                        <span className="font-mono text-primary">{row.sales}</span>
+                        <span className="font-mono text-emerald-400">
+                          {row.profit}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="col-span-3 rounded-2xl border border-border bg-card p-5">
+                  <h3 className="font-semibold text-foreground">
+                    Cost vs Profit
+                  </h3>
+                  <p className="mb-5 text-xs text-muted-foreground">
+                    Compare operating cost and net profit
+                  </p>
+                  {[
+                    ["Cost", 66, analytics.cost, "bg-red-400"],
+                    ["Profit", analytics.margin, analytics.profit, "bg-primary"],
+                  ].map(([label, pct, value, color]) => (
+                    <div key={label as string} className="mb-4">
+                      <div className="mb-1 flex justify-between text-sm">
+                        <span className="text-muted-foreground">{label}</span>
+                        <span className="font-mono text-foreground">
+                          {value as string}
+                        </span>
+                      </div>
+                      <div className="h-3 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className={`h-full rounded-full ${color}`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="col-span-4 rounded-2xl border border-primary/30 bg-primary/5 p-5">
+                  <div className="mb-4 flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    <h3 className="font-semibold text-foreground">
+                      AI Growth Plan
+                    </h3>
+                  </div>
+                  <div className="space-y-3">
+                    {analytics.aiActions.map((action, index) => (
+                      <div key={action} className="flex gap-3">
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-[#0b1326]">
+                          {index + 1}
+                        </span>
+                        <p className="text-sm leading-relaxed text-foreground">
+                          {action}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 rounded-xl bg-[#0B1326] p-3 text-xs text-muted-foreground">
+                    AI combines sales, complaints, customer flow, payment mix,
+                    and margin data to recommend profit actions.
+                  </div>
+                </div>
               </div>
             </div>
           )}
