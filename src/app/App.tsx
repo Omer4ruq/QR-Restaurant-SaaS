@@ -21,6 +21,7 @@ import {
   Navigation,
   Package,
   Phone,
+  Play,
   Plus,
   QrCode,
   Radio,
@@ -553,6 +554,7 @@ export default function App() {
     "preparing" | "cooking" | "ready" | null
   >(null);
   const [waiterCalled, setWaiterCalled] = useState(false);
+  const [waiterRequest, setWaiterRequest] = useState<string | null>(null);
   const [payMode, setPayMode] = useState<"pay-first" | "pay-later">(
     "pay-later",
   );
@@ -781,7 +783,11 @@ export default function App() {
           orderPlaced={orderPlaced}
           orderStatus={orderStatus}
           waiterCalled={waiterCalled}
-          onCallWaiter={() => setWaiterCalled(true)}
+          waiterRequest={waiterRequest}
+          onCallWaiter={(request) => {
+            setWaiterCalled(true);
+            setWaiterRequest(request);
+          }}
           payMode={payMode}
           onPayMode={setPayMode}
         />
@@ -795,6 +801,7 @@ export default function App() {
           onSelectOrder={setSelectedOrder}
           onAdvanceOrder={advanceAdminOrder}
           waiterCalled={waiterCalled}
+          waiterRequest={waiterRequest}
         />
       )}
       {view === "kitchen" && (
@@ -1197,6 +1204,7 @@ function CustomerMenu({
   orderPlaced,
   orderStatus,
   waiterCalled,
+  waiterRequest,
   onCallWaiter,
   payMode,
   onPayMode,
@@ -1221,12 +1229,45 @@ function CustomerMenu({
   orderPlaced: boolean;
   orderStatus: string | null;
   waiterCalled: boolean;
-  onCallWaiter: () => void;
+  waiterRequest: string | null;
+  onCallWaiter: (request: string) => void;
   payMode: string;
   onPayMode: (m: "pay-first" | "pay-later") => void;
 }) {
+  const [menuSearch, setMenuSearch] = useState("");
+  const [menuSearchFocused, setMenuSearchFocused] = useState(false);
+  const [waiterModalOpen, setWaiterModalOpen] = useState(false);
+  const waiterOptions = [
+    "Need tissue",
+    "Need water",
+    "Need spoon",
+    "Need fork",
+    "Need extra plate",
+    "Need sauce",
+    "Clean table",
+    "Billing help",
+  ];
   const mostOrdered = allItems.filter((i) => i.mostOrdered);
   const recommended = allItems.filter((i) => i.recommended);
+  const normalizedMenuSearch = menuSearch.trim().toLowerCase();
+  const searchedMenuItems = normalizedMenuSearch
+    ? menuItems.filter(
+        (item) =>
+          item.name.toLowerCase().includes(normalizedMenuSearch) ||
+          item.desc.toLowerCase().includes(normalizedMenuSearch) ||
+          item.category.toLowerCase().includes(normalizedMenuSearch),
+      )
+    : menuItems;
+  const searchSuggestions = (
+    normalizedMenuSearch
+      ? allItems.filter(
+          (item) =>
+            item.name.toLowerCase().includes(normalizedMenuSearch) ||
+            item.desc.toLowerCase().includes(normalizedMenuSearch) ||
+            item.category.toLowerCase().includes(normalizedMenuSearch),
+        )
+      : [...mostOrdered, ...recommended]
+  ).slice(0, 4);
 
   const statusMap = {
     preparing: {
@@ -1325,7 +1366,9 @@ function CustomerMenu({
             <div className="mx-4 mt-3 bg-sky-50 border border-sky-200 rounded-xl px-4 py-2.5 flex items-center gap-2">
               <Bell className="w-4 h-4 text-sky-600" />
               <span className="text-sky-700 text-sm font-medium">
-                Waiter notified! Someone is on their way.
+                Waiter notified
+                {waiterRequest ? ` for: ${waiterRequest}` : ""}. Someone is on
+                their way.
               </span>
             </div>
           )}
@@ -1347,6 +1390,83 @@ function CustomerMenu({
               ))}
             </div>
           </div>
+          {/* search item */}
+          <div className="px-4 pt-3">
+            <div className="relative">
+              <div className="flex items-center gap-2 rounded-2xl border border-border bg-[#131C2F] px-3 py-2.5 shadow-sm">
+                <Search className="w-4 h-4 text-muted-foreground shrink-0" />
+                <input
+                  value={menuSearch}
+                  onChange={(e) => setMenuSearch(e.target.value)}
+                  onFocus={() => setMenuSearchFocused(true)}
+                  onBlur={() =>
+                    setTimeout(() => setMenuSearchFocused(false), 120)
+                  }
+                  placeholder="Search dishes, cravings, categories..."
+                  className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+                />
+                {menuSearch && (
+                  <button
+                    onClick={() => setMenuSearch("")}
+                    className="w-6 h-6 rounded-full bg-muted flex items-center justify-center"
+                  >
+                    <X className="w-3.5 h-3.5 text-muted-foreground" />
+                  </button>
+                )}
+              </div>
+
+              {menuSearchFocused && (
+                <div className="absolute left-0 right-0 top-full z-20 mt-2 rounded-2xl border border-border bg-[#0b1326] p-2 shadow-2xl">
+                  <div className="px-2 pb-2 text-[10px] uppercase tracking-widest text-muted-foreground">
+                    {menuSearch ? "Search results" : "Popular picks"}
+                  </div>
+                  <div className="space-y-1">
+                    {searchSuggestions.length > 0 ? (
+                      searchSuggestions.map((item) => (
+                        <button
+                          key={item.id}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setMenuSearch(item.name);
+                            onSelectItem(item);
+                          }}
+                          className="w-full rounded-xl px-2 py-2 text-left hover:bg-[#131C2F] flex items-center gap-3"
+                        >
+                          <div className="w-10 h-10 rounded-xl overflow-hidden bg-muted shrink-0">
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <VegDot veg={item.veg} />
+                              <span className="text-xs font-semibold text-foreground truncate">
+                                {item.name}
+                              </span>
+                              {item.mostOrdered && (
+                                <Badge color="amber">Popular</Badge>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-muted-foreground truncate">
+                              {item.category} · ₹{item.price}
+                            </p>
+                          </div>
+                          <Plus className="w-4 h-4 text-primary" />
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-2 py-4 text-center text-xs text-muted-foreground">
+                        No dishes found. Try another name or category.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
 
           {/* MOST ORDERED */}
           {activeCat === "All" && (
@@ -1469,10 +1589,23 @@ function CustomerMenu({
           {/* FULL MENU LIST */}
           <div className="px-4 mt-5 pb-28">
             <h3 className="font-semibold text-foreground text-sm mb-3">
-              {activeCat === "All" ? "Full Menu" : activeCat}
+              {menuSearch
+                ? `Results for "${menuSearch}"`
+                : activeCat === "All"
+                  ? "Full Menu"
+                  : activeCat}
             </h3>
             <div className="space-y-3">
-              {menuItems.map((item) => (
+              {searchedMenuItems.length === 0 && (
+                <div className="rounded-2xl border border-border bg-[#131C2F] px-4 py-8 text-center">
+                  <Search className="w-7 h-7 mx-auto mb-2 text-muted-foreground opacity-60" />
+                  <p className="text-sm text-foreground">No dishes found</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Try searching by item name, category, or flavor.
+                  </p>
+                </div>
+              )}
+              {searchedMenuItems.map((item) => (
                 <div
                   key={item.id}
                   className="flex gap-3 border-b border-border pb-3 last:border-0"
@@ -1541,12 +1674,62 @@ function CustomerMenu({
 
         {/* CALL WAITER FAB */}
         <button
-          onClick={onCallWaiter}
+          onClick={() => setWaiterModalOpen(true)}
           className={`absolute bottom-20 right-4 flex items-center gap-2 px-3 py-2.5 rounded-full shadow-lg transition-all text-sm font-medium ${waiterCalled ? "bg-sky-500 text-white" : "bg-[#131C2F] border border-border text-foreground hover:bg-muted"}`}
         >
           <Bell className="w-4 h-4" />
           {waiterCalled ? "Called!" : "Call Waiter"}
         </button>
+
+        {/* WAITER REQUEST MODAL */}
+        {waiterModalOpen && (
+          <div className="absolute inset-0 z-40 flex items-end pointer-events-none">
+            <div className="w-full bg-[#0b1326] rounded-t-3xl border-t border-border p-5 shadow-2xl pointer-events-auto">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="font-semibold text-foreground">
+                    What do you need?
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Select a request and we will notify your waiter.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setWaiterModalOpen(false)}
+                  className="w-8 h-8 rounded-full bg-muted flex items-center justify-center"
+                >
+                  <X className="w-4 h-4 text-muted-foreground" />
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {waiterOptions.map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => {
+                      onCallWaiter(option);
+                      setWaiterModalOpen(false);
+                    }}
+                    className="rounded-2xl border border-border bg-[#131C2F] px-3 py-3 text-left text-sm text-foreground hover:border-primary hover:bg-primary/10 transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Bell className="w-4 h-4 text-primary" />
+                      {option}
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => {
+                  onCallWaiter("Need waiter assistance");
+                  setWaiterModalOpen(false);
+                }}
+                className="mt-3 w-full rounded-2xl bg-primary py-3 text-sm font-medium text-[#0b1326]"
+              >
+                Other assistance
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* CART BAR */}
         {cartCount > 0 && !cartOpen && (
@@ -1566,9 +1749,9 @@ function CustomerMenu({
 
         {/* CART DRAWER */}
         {cartOpen && (
-          <div className="absolute inset-0 bg-[#0b1326] z-20 flex items-end ">
+          <div className="absolute inset-0 z-20 flex items-end pointer-events-none">
             <div
-              className="w-full bg-card rounded-t-3xl max-h-[85%] overflow-y-auto"
+              className="w-full bg-[#0b1326] rounded-t-3xl max-h-[85%] overflow-y-auto pointer-events-auto"
               style={{ scrollbarWidth: "none" }}
             >
               <div className="flex items-center justify-between px-5 py-4 border-b border-border">
@@ -1685,6 +1868,15 @@ function CustomerMenu({
                 alt={selectedItem.name}
                 className="w-full h-full object-cover"
               />
+              <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center shadow-2xl">
+                  <Play className="w-7 h-7 text-[#0b1326] fill-[#0b1326] ml-1" />
+                </div>
+              </div>
+              <div className="absolute bottom-4 right-4 rounded-full bg-black/70 px-3 py-1.5 text-xs text-white flex items-center gap-1.5">
+                <Play className="w-3 h-3 fill-white" />
+                Recipe video
+              </div>
               <button
                 onClick={() => onSelectItem(null)}
                 className="absolute top-4 left-4 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow"
@@ -1728,10 +1920,48 @@ function CustomerMenu({
                   allow 15–20 minutes for best results.
                 </p>
               </div>
+              <div className="bg-[#131C2F] rounded-xl p-3 mb-4">
+                <p className="text-xs text-muted-foreground font-medium mb-2">
+                  Ingredients
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    selectedItem.veg ? "Paneer / Veg protein" : "Chicken",
+                    selectedItem.spicy ? "House spice blend" : "Mild spices",
+                    selectedItem.category === "Biryani"
+                      ? "Basmati rice"
+                      : selectedItem.category === "Breads"
+                        ? "Fresh flour"
+                        : selectedItem.category === "Drinks"
+                          ? "Fresh milk"
+                          : "Fresh herbs",
+                    "Garlic",
+                    "Butter",
+                    "Chef sauce",
+                  ].map((ingredient) => (
+                    <span
+                      key={ingredient}
+                      className="rounded-full bg-muted px-2.5 py-1 text-[11px] text-muted-foreground"
+                    >
+                      {ingredient}
+                    </span>
+                  ))}
+                </div>
+              </div>
               <div className="flex items-center justify-between">
-                <span className="text-xl font-semibold font-mono text-primary">
-                  ₹{selectedItem.price}
-                </span>
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xl font-semibold font-mono text-primary">
+                      ₹{Math.round(selectedItem.price * 0.85)}
+                    </span>
+                    <span className="text-sm font-mono text-muted-foreground line-through">
+                      ₹{selectedItem.price}
+                    </span>
+                  </div>
+                  <span className="text-xs text-emerald-400 font-medium">
+                    15% chef special discount
+                  </span>
+                </div>
                 {getQty(selectedItem.id) > 0 ? (
                   <div className="flex items-center gap-3">
                     <button
@@ -1785,6 +2015,7 @@ function AdminDashboard({
   onSelectOrder,
   onAdvanceOrder,
   waiterCalled,
+  waiterRequest,
 }: {
   tab: "tables" | "orders" | "analytics";
   onTab: (t: "tables" | "orders" | "analytics") => void;
@@ -1793,6 +2024,7 @@ function AdminDashboard({
   onSelectOrder: (id: string | null) => void;
   onAdvanceOrder: (id: string) => void;
   waiterCalled: boolean;
+  waiterRequest: string | null;
 }) {
   const [selectedTable, setSelectedTable] = useState<number | null>(null);
   const [analyticsPeriod, setAnalyticsPeriod] = useState<
@@ -1970,7 +2202,9 @@ function AdminDashboard({
       desc:
         table.alert === "bill"
           ? `Current bill ₹${table.value}`
-          : `${table.guests || table.cap} guests need staff`,
+          : table.id === 7 && waiterRequest
+            ? waiterRequest
+            : `${table.guests || table.cap} guests need staff`,
       tone: table.alert === "bill" ? "text-primary" : "text-red-300",
       icon: table.alert === "bill" ? DollarSign : Bell,
     })),
@@ -2525,7 +2759,7 @@ function AdminDashboard({
                           </button>
                         )}
                       </div>
-                      
+
                       {selectedFloorTable ? (
                         <div className="mt-3 space-y-1.5 text-sm">
                           {[
