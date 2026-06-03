@@ -794,6 +794,7 @@ export default function App() {
           selectedOrder={selectedOrder}
           onSelectOrder={setSelectedOrder}
           onAdvanceOrder={advanceAdminOrder}
+          waiterCalled={waiterCalled}
         />
       )}
       {view === "kitchen" && (
@@ -1783,6 +1784,7 @@ function AdminDashboard({
   selectedOrder,
   onSelectOrder,
   onAdvanceOrder,
+  waiterCalled,
 }: {
   tab: "tables" | "orders" | "analytics";
   onTab: (t: "tables" | "orders" | "analytics") => void;
@@ -1790,7 +1792,10 @@ function AdminDashboard({
   selectedOrder: string | null;
   onSelectOrder: (id: string | null) => void;
   onAdvanceOrder: (id: string) => void;
+  waiterCalled: boolean;
 }) {
+  const [selectedTable, setSelectedTable] = useState<number | null>(null);
+
   const statusColors = {
     available: "bg-emerald-100 border-emerald-200 text-emerald-700",
     occupied: "bg-sky-100 border-sky-200 text-sky-700",
@@ -1850,6 +1855,24 @@ function AdminDashboard({
       icon: TrendingUp,
       color: "text-primary",
     },
+    {
+      label: "Pending Tickets",
+      value: String(
+        orders.filter((o) => o.status === "new" || o.status === "ready").length,
+      ),
+      sub: "Needs staff action",
+      icon: AlarmClock,
+      color: "text-red-300",
+      alert: true,
+    },
+    {
+      label: "Waiter Alerts",
+      value: waiterCalled ? "1" : "3",
+      sub: waiterCalled ? "Table 07 requested help" : "Tables 03, 07, 12",
+      icon: Bell,
+      color: "text-red-300",
+      alert: true,
+    },
   ];
 
   const orderColumns = [
@@ -1900,6 +1923,65 @@ function AdminDashboard({
       { name: "Butter Chicken", qty: 1 },
       { name: "Garlic Naan", qty: 3, note: "Served with extra butter" },
     ];
+
+  const diningFloorTables = Array.from({ length: 15 }, (_, index) => {
+    const id = index + 1;
+    const table = TABLES_DATA.find((t) => t.id === id);
+    const emptyTables = [2, 4, 8, 13];
+    const alert =
+      id === 5 ? "waiter" : id === 12 ? "bill" : waiterCalled && id === 7 ? "waiter" : null;
+    const isEmpty = emptyTables.includes(id) || table?.status === "available";
+
+    return {
+      id,
+      cap: table?.cap ?? (id % 3 === 0 ? 4 : 2),
+      guests: table?.guests ?? 0,
+      status: alert ? "alert" : isEmpty ? "empty" : "busy",
+      alert,
+      order: table?.order,
+      value: table?.value ?? 0,
+      time: table?.time ?? "0 min",
+    };
+  });
+
+  const selectedFloorTable = diningFloorTables.find(
+    (table) => table.id === selectedTable,
+  );
+  const busyTables = diningFloorTables.filter((table) => table.status === "busy");
+  const emptyTables = diningFloorTables.filter((table) => table.status === "empty");
+  const alertTables = diningFloorTables.filter((table) => table.status === "alert");
+  const occupiedSeats = diningFloorTables.reduce(
+    (sum, table) => sum + table.guests,
+    0,
+  );
+  const totalSeats = diningFloorTables.reduce((sum, table) => sum + table.cap, 0);
+  const occupancyPct = Math.round((occupiedSeats / totalSeats) * 100);
+  const floorRevenue = diningFloorTables.reduce(
+    (sum, table) => sum + table.value,
+    0,
+  );
+  const floorSignals = [
+    ...alertTables.map((table) => ({
+      table: table.id,
+      title: table.alert === "bill" ? "Bill requested" : "Waiter requested",
+      desc:
+        table.alert === "bill"
+          ? `Current bill ₹${table.value}`
+          : `${table.guests || table.cap} guests need staff`,
+      tone: table.alert === "bill" ? "text-primary" : "text-red-300",
+      icon: table.alert === "bill" ? DollarSign : Bell,
+    })),
+    ...orders
+      .filter((order) => order.status === "ready")
+      .slice(0, 2)
+      .map((order) => ({
+        table: order.table,
+        title: "Ready for service",
+        desc: `${order.items} items waiting`,
+        tone: "text-emerald-300",
+        icon: CheckCircle,
+      })),
+  ];
 
   return (
     <div className="flex h-[calc(100vh-56px)] bg-background">
@@ -1952,11 +2034,20 @@ function AdminDashboard({
       {/* MAIN */}
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* TOP METRICS */}
-        <div className="grid grid-cols-4 gap-4 p-5 border-b border-border bg-[#131C2F]">
+        <div className="grid grid-cols-6 gap-4 p-5 border-b border-border bg-[#131C2F]">
           {topMetrics.map((m) => (
-            <div key={m.label} className="flex items-center gap-3">
+            <div
+              key={m.label}
+              className={`relative flex items-center gap-3 rounded-2xl p-2 transition-all ${m.alert ? "bg-red-950/35 ring-1 ring-red-900/60 animate-pulse shadow-lg shadow-red-950/30" : ""}`}
+            >
+              {m.alert && (
+                <span className="absolute -right-1 -top-1 flex h-3 w-3">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-800 opacity-40" />
+                  <span className="relative inline-flex h-3 w-3 rounded-full bg-red-700" />
+                </span>
+              )}
               <div
-                className={`w-10 h-10 rounded-xl bg-white flex items-center justify-center`}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center ${m.alert ? "bg-red-950/80 ring-1 ring-red-800/60" : "bg-white"}`}
               >
                 <m.icon className={`w-5 h-5 ${m.color}`} />
               </div>
@@ -1974,61 +2065,304 @@ function AdminDashboard({
         {/* CONTENT */}
         <div className="flex-1 overflow-hidden flex">
           {tab === "tables" && (
-            <div className="flex-1 p-6 overflow-y-auto">
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="text-xl font-semibold text-foreground">
-                  Table Map
+            <div className="flex-1 p-5 overflow-y-auto">
+              <div className="flex items-center justify-between mb-3">
+                <h2
+                  className="text-3xl font-medium text-foreground"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  Tables Map
                 </h2>
-                <div className="flex items-center gap-3 text-xs">
-                  {Object.entries({
-                    available: "Available",
-                    occupied: "Occupied",
-                    ordering: "Ordering",
-                    waiting: "Waiting",
-                  }).map(([k, v]) => (
-                    <span
-                      key={k}
-                      className={`flex items-center gap-1.5 px-2 py-1 rounded-full border ${statusColors[k as keyof typeof statusColors]}`}
-                    >
-                      <Circle className="w-2 h-2 fill-current" />
-                      {v}
+                <div className="flex gap-4">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-sm bg-surface-variant" />
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                      Empty
                     </span>
-                  ))}
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-sm bg-primary" />
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                      Busy
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-sm bg-red-700" />
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                      Alert
+                    </span>
+                  </div>
                 </div>
               </div>
-              <div className="grid grid-cols-4 gap-4">
-                {TABLES_DATA.map((table) => (
-                  <div
-                    key={table.id}
-                    className={`rounded-2xl border-2 p-4 ${statusColors[table.status]} cursor-pointer hover:shadow-md transition-shadow`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-mono font-bold text-lg">
-                        T{String(table.id).padStart(2, "0")}
-                      </span>
-                      <span className="text-xs opacity-70 flex items-center gap-1">
-                        <Users className="w-3 h-3" />
-                        {table.cap}
-                      </span>
-                    </div>
-                    <div className="text-xs capitalize font-medium opacity-80 mb-1">
-                      {table.status}
-                    </div>
-                    {table.status !== "available" && (
-                      <div className="text-xs opacity-70">
-                        <div>
-                          {table.guests} guests · {table.time}
+
+              <div className="relative min-h-[540px] overflow-visible rounded-xl border border-outline/10 bg-[#131C2F]/80 p-4 shadow-2xl shadow-black/20 backdrop-blur-xl">
+                <div
+                  className="absolute inset-0 opacity-[0.03] pointer-events-none"
+                  style={{
+                    backgroundImage:
+                      "radial-gradient(#fff 1px, transparent 1px)",
+                    backgroundSize: "30px 30px",
+                  }}
+                />
+
+                <div className="relative grid min-h-[510px] grid-cols-[240px_1fr_280px] gap-4">
+                  <aside className="rounded-2xl border border-white/10 bg-[#0B1326]/70 p-4 shadow-xl">
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground">
+                      Floor Summary
+                    </p>
+                    <h3
+                      className="mt-1 text-xl text-primary"
+                      style={{ fontFamily: "var(--font-display)" }}
+                    >
+                      Dining Load
+                    </h3>
+                    <div className="mt-4 space-y-2">
+                      {[
+                        ["Total Tables", diningFloorTables.length],
+                        ["Busy Tables", busyTables.length],
+                        ["Empty Tables", emptyTables.length],
+                        ["Live Alerts", alertTables.length],
+                      ].map(([label, value]) => (
+                        <div
+                          key={label}
+                          className="flex items-center justify-between rounded-xl bg-[#131C2F] px-3 py-1.5"
+                        >
+                          <span className="text-xs text-muted-foreground">
+                            {label}
+                          </span>
+                          <span className="font-mono text-sm text-foreground">
+                            {value}
+                          </span>
                         </div>
-                        {(table.value ?? 0) > 0 && (
-                          <div className="font-mono font-medium mt-0.5">
-                            ₹{table.value}
+                      ))}
+                    </div>
+                    <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/5 p-3">
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>Occupancy</span>
+                        <span className="font-mono text-primary">
+                          {occupancyPct}%
+                        </span>
+                      </div>
+                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{ width: `${occupancyPct}%` }}
+                        />
+                      </div>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        {occupiedSeats} guests seated across {totalSeats} seats.
+                      </p>
+                    </div>
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      <div className="rounded-xl bg-[#131C2F] p-3">
+                        <p className="text-[10px] uppercase text-muted-foreground">
+                          Floor Bill
+                        </p>
+                        <p className="font-mono text-sm text-primary">
+                          ₹{floorRevenue}
+                        </p>
+                      </div>
+                      <div className="rounded-xl bg-[#131C2F] p-3">
+                        <p className="text-[10px] uppercase text-muted-foreground">
+                          Service
+                        </p>
+                        <p className="text-sm text-emerald-300">Stable</p>
+                      </div>
+                    </div>
+                  </aside>
+
+                  <div className="mx-auto grid w-full max-w-[570px] grid-cols-4 content-center justify-items-center gap-x-8 gap-y-3">
+                  {diningFloorTables.map((table) => {
+                    const isSelected = selectedTable === table.id;
+                    const isAlert = table.status === "alert";
+                    const isEmpty = table.status === "empty";
+                    return (
+                      <div key={table.id} className="relative flex justify-center">
+                        <button
+                        key={table.id}
+                        onClick={() =>
+                          setSelectedTable(isSelected ? null : table.id)
+                        }
+                        className={`h-[120px] w-[120px] rounded-full flex flex-col items-center justify-center transition-all ${
+                          isSelected ? "scale-105 ring-2 ring-primary" : ""
+                        } ${
+                          isAlert
+                            ? "animate-pulse border-2 border-red-700/70 bg-red-950/35 shadow-2xl shadow-red-950/40"
+                            : isEmpty
+                              ? "bg-surface-variant/20 border border-outline-variant/30 opacity-40 hover:opacity-100"
+                              : "border border-primary/60 bg-primary/10 shadow-lg shadow-primary/5 hover:scale-105"
+                        }`}
+                      >
+                        {isAlert ? (
+                          <>
+                            {table.alert === "bill" ? (
+                              <DollarSign className="w-5 h-5 text-primary mb-1" />
+                            ) : (
+                              <Bell className="w-5 h-5 text-red-400 mb-1" />
+                            )}
+                            <span
+                              className={`text-xs font-bold ${table.alert === "bill" ? "text-primary" : "text-red-400"}`}
+                            >
+                              T{table.id}
+                            </span>
+                            <span
+                              className={`text-[8px] uppercase tracking-tighter ${table.alert === "bill" ? "text-primary" : "text-red-400"}`}
+                            >
+                              {table.alert === "bill" ? "BILL REQ" : "WAITER!"}
+                            </span>
+                          </>
+                        ) : isEmpty ? (
+                          <>
+                            <span className="text-[10px] uppercase font-medium">
+                              T{table.id}
+                            </span>
+                            <Plus className="w-3 h-3 mt-1" />
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-[10px] opacity-60 uppercase font-medium">
+                              T{table.id}
+                            </span>
+                            <span
+                              className="text-lg text-primary"
+                              style={{ fontFamily: "var(--font-display)" }}
+                            >
+                              {table.cap}p
+                            </span>
+                          </>
+                        )}
+                      </button>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                  <aside className="rounded-2xl border border-white/10 bg-[#0B1326]/70 p-4 shadow-xl">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs uppercase tracking-widest text-muted-foreground">
+                          Live Floor Signals
+                        </p>
+                        <h3
+                          className="mt-1 text-xl text-primary"
+                          style={{ fontFamily: "var(--font-display)" }}
+                        >
+                          Staff Radar
+                        </h3>
+                      </div>
+                      <span className="flex h-3 w-3">
+                        <span className="absolute inline-flex h-3 w-3 animate-ping rounded-full bg-red-800 opacity-40" />
+                        <span className="relative inline-flex h-3 w-3 rounded-full bg-red-700" />
+                      </span>
+                    </div>
+
+                    <div className="mt-4 space-y-2">
+                      {floorSignals.length > 0 ? (
+                        floorSignals.map((signal, index) => (
+                          <div
+                            key={`${signal.title}-${signal.table}-${index}`}
+                            className="rounded-xl border border-white/10 bg-[#131C2F] p-2.5"
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="mt-0.5 rounded-lg bg-white/5 p-2">
+                                <signal.icon className={`w-4 h-4 ${signal.tone}`} />
+                              </div>
+                              <div className="min-w-0">
+                                <p className={`text-sm font-medium ${signal.tone}`}>
+                                  T{signal.table} · {signal.title}
+                                </p>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                  {signal.desc}
+                                </p>
+                              </div>
+                            </div>
                           </div>
+                        ))
+                      ) : (
+                        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-sm text-emerald-300">
+                          No urgent floor signals right now.
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-4 rounded-2xl border min-h-[300px] border-primary/20 bg-primary/5 p-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                            Selected Table
+                          </p>
+                          <h4
+                            className="mt-1 text-lg text-primary"
+                            style={{ fontFamily: "var(--font-display)" }}
+                          >
+                            {selectedFloorTable
+                              ? `T${selectedFloorTable.id}`
+                              : "No table selected"}
+                          </h4>
+                        </div>
+                        {selectedFloorTable && (
+                          <button
+                            onClick={() => setSelectedTable(null)}
+                            className="w-7 h-7 rounded-full bg-white/10 text-muted-foreground hover:bg-white/15 hover:text-foreground flex items-center justify-center"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
                         )}
                       </div>
-                    )}
-                  </div>
-                ))}
+                      {selectedFloorTable ? (
+                        <div className="mt-3 space-y-1.5 text-sm">
+                          {[
+                            ["Seats", selectedFloorTable.cap],
+                            ["Guests", selectedFloorTable.guests || "-"],
+                            ["Time", selectedFloorTable.time],
+                            [
+                              "Status",
+                              selectedFloorTable.alert
+                                ? selectedFloorTable.alert === "waiter"
+                                  ? "Waiter requested"
+                                  : "Bill requested"
+                                : selectedFloorTable.status,
+                            ],
+                            [
+                              "Order",
+                              selectedFloorTable.order ?? "No active order",
+                            ],
+                            ["Current Bill", `₹${selectedFloorTable.value}`],
+                          ].map(([label, value]) => (
+                            <div
+                              key={label}
+                              className="flex justify-between border-b border-border pb-2 last:border-0 last:pb-0"
+                            >
+                              <span className="text-muted-foreground">{label}</span>
+                              <span className="font-mono text-foreground text-right">
+                                {value}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+                          Click any table to inspect seating, order, bill, and
+                          service status.
+                        </p>
+                      )}
+                    </div>
+
+                    {/* <div className="mt-3 rounded-xl bg-[#131C2F] p-3">
+                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                        Suggested Action
+                      </p>
+                      <p className="mt-1 text-sm text-foreground">
+                        {alertTables.length > 0
+                          ? "Dispatch floor staff to alert tables first."
+                          : orders.some((order) => order.status === "ready")
+                            ? "Serve ready orders before seating new guests."
+                            : "Keep monitoring table turnover."}
+                      </p>
+                    </div> */}
+                  </aside>
               </div>
+            </div>
             </div>
           )}
 
