@@ -1279,7 +1279,7 @@ function CustomerMenu({
                 <button
                   key={c}
                   onClick={() => onCat(c)}
-                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeCat === c ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeCat === c ? "bg-primary text-[#0b1326]" : "bg-muted text-muted-foreground hover:text-foreground"}`}
                 >
                   {c}
                 </button>
@@ -1339,7 +1339,7 @@ function CustomerMenu({
                   <button
                     key={item.id}
                     onClick={() => onSelectItem(item)}
-                    className="w-full bg-secondary/60 rounded-xl p-3 flex gap-3 items-center text-left"
+                    className="w-full bg-[#131C2F] rounded-xl p-3 flex gap-3 items-center text-left"
                   >
                     <div className="w-14 h-14 rounded-xl overflow-hidden bg-muted shrink-0">
                       <img
@@ -1372,7 +1372,7 @@ function CustomerMenu({
                             }}
                             className="w-6 h-6 bg-primary rounded-full flex items-center justify-center"
                           >
-                            <Minus className="w-3 h-3 text-white" />
+                            <Minus className="w-3 h-3 text-[#0b1326]" />
                           </button>
                           <span className="text-xs font-mono w-4 text-center">
                             {getQty(item.id)}
@@ -1384,7 +1384,7 @@ function CustomerMenu({
                             }}
                             className="w-6 h-6 bg-primary rounded-full flex items-center justify-center"
                           >
-                            <Plus className="w-3 h-3 text-white" />
+                            <Plus className="w-3 h-3 text-[#0b1326]" />
                           </button>
                         </div>
                       ) : (
@@ -1395,7 +1395,7 @@ function CustomerMenu({
                           }}
                           className="w-6 h-6 bg-primary rounded-full flex items-center justify-center"
                         >
-                          <Plus className="w-3 h-3 text-white" />
+                          <Plus className="w-3 h-3 text-[#0b1326]" />
                         </button>
                       )}
                     </div>
@@ -1450,7 +1450,7 @@ function CustomerMenu({
                             onClick={() => onRemove(item.id)}
                             className="w-7 h-7 bg-primary rounded-full flex items-center justify-center"
                           >
-                            <Minus className="w-3.5 h-3.5 text-white" />
+                            <Minus className="w-3.5 h-3.5 text-[#0b1326]" />
                           </button>
                           <span className="text-sm font-mono font-medium w-4 text-center">
                             {getQty(item.id)}
@@ -1459,15 +1459,15 @@ function CustomerMenu({
                             onClick={() => onAdd(item)}
                             className="w-7 h-7 bg-primary rounded-full flex items-center justify-center"
                           >
-                            <Plus className="w-3.5 h-3.5 text-white" />
+                            <Plus className="w-3.5 h-3.5 text-[#0b1326]" />
                           </button>
                         </div>
                       ) : (
                         <button
                           onClick={() => onAdd(item)}
-                          className="flex items-center gap-1 bg-primary text-white text-xs px-3 py-1.5 rounded-full font-medium"
+                          className="flex items-center gap-1 bg-primary text-[#0b1326] text-xs px-3 py-1.5 rounded-full font-medium"
                         >
-                          <Plus className="w-3 h-3" /> Add
+                          <Plus className="w-3 h-3 text-[#0b1326]" /> Add
                         </button>
                       )}
                     </div>
@@ -1481,7 +1481,7 @@ function CustomerMenu({
         {/* CALL WAITER FAB */}
         <button
           onClick={onCallWaiter}
-          className={`absolute bottom-20 right-4 flex items-center gap-2 px-3 py-2.5 rounded-full shadow-lg transition-all text-sm font-medium ${waiterCalled ? "bg-sky-500 text-white" : "bg-white border border-border text-foreground hover:bg-muted"}`}
+          className={`absolute bottom-20 right-4 flex items-center gap-2 px-3 py-2.5 rounded-full shadow-lg transition-all text-sm font-medium ${waiterCalled ? "bg-sky-500 text-white" : "bg-[#131C2F] border border-border text-foreground hover:bg-muted"}`}
         >
           <Bell className="w-4 h-4" />
           {waiterCalled ? "Called!" : "Call Waiter"}
@@ -1491,7 +1491,7 @@ function CustomerMenu({
         {cartCount > 0 && !cartOpen && (
           <button
             onClick={onCartOpen}
-            className="absolute bottom-4 left-4 right-4 bg-primary text-white rounded-2xl px-4 py-3 flex items-center justify-between shadow-xl"
+            className="absolute bottom-4 left-4 right-4 bg-primary text-[#0b1326] rounded-2xl px-4 py-3 flex items-center justify-between shadow-xl"
           >
             <div className="flex items-center gap-2">
               <span className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-xs font-mono font-bold">
@@ -1505,7 +1505,7 @@ function CustomerMenu({
 
         {/* CART DRAWER */}
         {cartOpen && (
-          <div className="absolute inset-0 bg-black/40 z-20 flex items-end">
+          <div className="absolute inset-0 bg-[#0b1326] z-20 flex items-end ">
             <div
               className="w-full bg-card rounded-t-3xl max-h-[85%] overflow-y-auto"
               style={{ scrollbarWidth: "none" }}
@@ -1518,7 +1518,7 @@ function CustomerMenu({
               </div>
 
               {/* Payment mode toggle */}
-              <div className="px-5 py-3 bg-secondary/50 border-b border-border">
+              <div className="px-5 py-3 bg-[#131C2F] border-b border-border">
                 <p className="text-xs text-muted-foreground mb-2 font-medium">
                   Payment preference
                 </p>
@@ -1527,7 +1527,7 @@ function CustomerMenu({
                     <button
                       key={m}
                       onClick={() => onPayMode(m)}
-                      className={`flex-1 py-2 rounded-xl text-xs font-medium transition-colors ${payMode === m ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}
+                      className={`flex-1 py-2 rounded-xl text-xs font-medium transition-colors ${payMode === m ? "bg-primary text-[#0b1326]" : "bg-muted text-muted-foreground"}`}
                     >
                       {m === "pay-later" ? "Pay After Eating" : "Pay Now"}
                     </button>
@@ -1535,7 +1535,7 @@ function CustomerMenu({
                 </div>
                 {payMode === "pay-first" && (
                   <p className="text-xs text-muted-foreground mt-2">
-                    You'll be prompted to pay via UPI/card before the order is
+                    You'll be prompted to pay via SSL/card before the order is
                     placed.
                   </p>
                 )}
@@ -1573,7 +1573,7 @@ function CustomerMenu({
                         onClick={() => onAdd(c.item)}
                         className="w-7 h-7 bg-primary rounded-full flex items-center justify-center"
                       >
-                        <Plus className="w-3 h-3 text-white" />
+                        <Plus className="w-3 h-3 text-[#0b1326]" />
                       </button>
                     </div>
                   </div>
@@ -1601,7 +1601,7 @@ function CustomerMenu({
                 </div>
                 <button
                   onClick={onPlaceOrder}
-                  className="w-full bg-primary text-white py-3.5 rounded-2xl font-medium text-sm hover:bg-primary/90 transition-colors"
+                  className="w-full bg-primary text-[#0b1326] py-3.5 rounded-2xl font-medium text-sm hover:bg-primary/90 transition-colors"
                 >
                   {payMode === "pay-first"
                     ? "Pay & Place Order"
@@ -1615,7 +1615,7 @@ function CustomerMenu({
         {/* ITEM DETAIL MODAL */}
         {selectedItem && (
           <div
-            className="absolute inset-0 bg-card z-30 overflow-y-auto"
+            className="absolute inset-0 bg-[#0b1326] z-30 overflow-y-auto"
             style={{ scrollbarWidth: "none" }}
           >
             <div className="relative h-52 bg-muted">
@@ -1628,7 +1628,7 @@ function CustomerMenu({
                 onClick={() => onSelectItem(null)}
                 className="absolute top-4 left-4 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow"
               >
-                <ArrowLeft className="w-4 h-4 text-foreground" />
+                <ArrowLeft className="w-4 h-4 text-foreground text-[#0b1326]" />
               </button>
             </div>
             <div className="px-5 py-4">
@@ -1658,7 +1658,7 @@ function CustomerMenu({
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
                 {selectedItem.desc}
               </p>
-              <div className="bg-secondary/60 rounded-xl p-3 mb-4">
+              <div className="bg-[#131C2F] rounded-xl p-3 mb-4">
                 <p className="text-xs text-muted-foreground font-medium mb-1">
                   Chef's note
                 </p>
@@ -1675,9 +1675,9 @@ function CustomerMenu({
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => onRemove(selectedItem.id)}
-                      className="w-9 h-9 bg-muted rounded-full flex items-center justify-center"
+                      className="w-9 h-9 bg-primary rounded-full flex items-center justify-center"
                     >
-                      <Minus className="w-4 h-4" />
+                      <Minus className="w-4 h-4 text-[#0b1326] " />
                     </button>
                     <span className="font-mono font-bold text-lg">
                       {getQty(selectedItem.id)}
@@ -1686,7 +1686,7 @@ function CustomerMenu({
                       onClick={() => onAdd(selectedItem)}
                       className="w-9 h-9 bg-primary rounded-full flex items-center justify-center"
                     >
-                      <Plus className="w-4 h-4 text-white" />
+                      <Plus className="w-4 h-4 text-[#0b1326]" />
                     </button>
                   </div>
                 ) : (
@@ -1695,9 +1695,9 @@ function CustomerMenu({
                       onAdd(selectedItem);
                       onSelectItem(null);
                     }}
-                    className="bg-primary text-white px-6 py-2.5 rounded-full font-medium text-sm flex items-center gap-2"
+                    className="bg-primary text-[#0b1326] px-6 py-2.5 rounded-full font-medium text-sm flex items-center gap-2"
                   >
-                    <Plus className="w-4 h-4" /> Add to Cart
+                    <Plus className="w-4 h-4 text-[#0b1326]" /> Add to Cart
                   </button>
                 )}
               </div>
@@ -1814,12 +1814,12 @@ function AdminDashboard({
             <button
               key={item.id}
               onClick={() => onTab(item.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium mb-1 transition-colors ${tab === item.id ? "bg-sidebar-primary text-sidebar-primary-foreground" : "text-sidebar-foreground hover:bg-sidebar-accent"}`}
+              className={`w-full flex  items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium mb-1 transition-colors ${tab === item.id ? "bg-primary text-[#0b1326]" : "text-sidebar-foreground hover:bg-sidebar-accent"}`}
             >
-              <item.icon className="w-4 h-4" />
+              <item.icon className="w-4 h-4 " />
               {item.label}
               {item.id === "orders" && (
-                <span className="ml-auto text-xs bg-primary text-white px-1.5 py-0.5 rounded-full font-mono">
+                <span className="ml-auto text-xs bg-primary text-[#0b1326] px-1.5 py-0.5 rounded-full font-mono">
                   5
                 </span>
               )}
