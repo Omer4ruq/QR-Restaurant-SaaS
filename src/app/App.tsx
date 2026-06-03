@@ -39,7 +39,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -452,6 +452,15 @@ const ADMIN_ORDERS = [
     value: 387,
     mode: "pay-first",
   },
+  {
+    id: "ord-012",
+    table: 2,
+    status: "served" as const,
+    ago: "46 min",
+    items: 2,
+    value: 687,
+    mode: "pay-first",
+  },
 ];
 
 const AI_RESPONSES = [
@@ -474,7 +483,22 @@ interface ChatMsg {
   role: "user" | "ai";
   text: string;
 }
-type KitchenOrder = (typeof KITCHEN_INITIAL)[0];
+type OrderDetailItem = {
+  name: string;
+  qty: number;
+  note?: string;
+};
+type AdminOrder = Omit<(typeof ADMIN_ORDERS)[number], "status"> & {
+  status: "new" | "cooking" | "ready" | "served";
+};
+type KitchenOrder = {
+  id: string;
+  table: number;
+  status: "new" | "cooking" | "ready";
+  items: OrderDetailItem[];
+  elapsed: number;
+  priority: "urgent" | "high" | "normal";
+};
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
@@ -538,6 +562,8 @@ export default function App() {
     "tables",
   );
   const [selectedOrder, setSelectedOrder] = useState<string | null>("k1");
+  const [adminOrders, setAdminOrders] =
+    useState<AdminOrder[]>(ADMIN_ORDERS);
 
   // kitchen state
   const [kitchenOrders, setKitchenOrders] =
@@ -600,7 +626,35 @@ export default function App() {
     setOrderStatus("preparing");
   };
 
-  const advanceOrder = (id: string) =>
+  const updateAdminOrderStatus = (id: string, status: AdminOrder["status"]) =>
+    setAdminOrders((prev) =>
+      prev.map((order) => (order.id === id ? { ...order, status } : order)),
+    );
+
+  const advanceAdminOrder = (id: string) => {
+    const current = adminOrders.find((order) => order.id === id);
+    setAdminOrders((prev) =>
+      prev.map((order) => {
+        if (order.id !== id) return order;
+        const nextStatus =
+          order.status === "new"
+            ? "cooking"
+            : order.status === "ready"
+              ? "served"
+              : order.status;
+        return { ...order, status: nextStatus };
+      }),
+    );
+    if (current?.status === "new") {
+      setKitchenOrders((prev) =>
+        prev.map((order) =>
+          order.id === id ? { ...order, status: "cooking" } : order,
+        ),
+      );
+    }
+  };
+
+  const advanceOrder = (id: string) => {
     setKitchenOrders((prev) =>
       prev.map((o) =>
         o.id !== id
@@ -614,6 +668,10 @@ export default function App() {
             },
       ),
     );
+    const kitchenOrder = kitchenOrders.find((o) => o.id === id);
+    if (kitchenOrder?.status === "new") updateAdminOrderStatus(id, "cooking");
+    if (kitchenOrder?.status === "cooking") updateAdminOrderStatus(id, "ready");
+  };
 
   const sendChat = () => {
     if (!chatInput.trim()) return;
@@ -732,8 +790,10 @@ export default function App() {
         <AdminDashboard
           tab={adminTab}
           onTab={setAdminTab}
+          orders={adminOrders}
           selectedOrder={selectedOrder}
           onSelectOrder={setSelectedOrder}
+          onAdvanceOrder={advanceAdminOrder}
         />
       )}
       {view === "kitchen" && (
@@ -766,7 +826,7 @@ function SaaSLanding({
   chatInput: string;
   onChatInput: (v: string) => void;
   onSend: () => void;
-  chatEnd: React.RefObject<HTMLDivElement>;
+  chatEnd: React.RefObject<HTMLDivElement | null>;
 }) {
   const steps = [
     {
@@ -1719,13 +1779,17 @@ function CustomerMenu({
 function AdminDashboard({
   tab,
   onTab,
+  orders,
   selectedOrder,
   onSelectOrder,
+  onAdvanceOrder,
 }: {
   tab: "tables" | "orders" | "analytics";
   onTab: (t: "tables" | "orders" | "analytics") => void;
+  orders: AdminOrder[];
   selectedOrder: string | null;
   onSelectOrder: (id: string | null) => void;
+  onAdvanceOrder: (id: string) => void;
 }) {
   const statusColors = {
     available: "bg-emerald-100 border-emerald-200 text-emerald-700",
@@ -1750,6 +1814,11 @@ function AdminDashboard({
       badge: "green",
       label: "Ready",
     },
+    served: {
+      bg: "bg-[#131C2F] border-sky-200 text-white",
+      badge: "blue",
+      label: "Served",
+    },
   };
 
   const topMetrics = [
@@ -1769,8 +1838,8 @@ function AdminDashboard({
     },
     {
       label: "Open Orders",
-      value: "5",
-      sub: "2 new, 2 cooking, 1 ready",
+      value: String(orders.length),
+      sub: `${orders.filter((o) => o.status === "new").length} new, ${orders.filter((o) => o.status === "cooking").length} cooking, ${orders.filter((o) => o.status === "ready").length} ready`,
       icon: Package,
       color: "text-amber-600",
     },
@@ -1783,7 +1852,54 @@ function AdminDashboard({
     },
   ];
 
-  const selected = ADMIN_ORDERS.find((o) => o.id === selectedOrder);
+  const orderColumns = [
+    {
+      status: "new",
+      title: "New Order",
+      subtitle: "Needs kitchen approval",
+      icon: Bell,
+      accent: "text-amber-500",
+      ring: "border-amber-500/40",
+      action: "Forward to Kitchen",
+      tooltip: "left-[calc(100%+0.5rem)]",
+    },
+    {
+      status: "cooking",
+      title: "In Kitchen",
+      subtitle: "Food is being prepared",
+      icon: ChefHat,
+      accent: "text-orange-500",
+      ring: "border-orange-500/40",
+      action: "Track Cooking",
+      tooltip: "left-[calc(100%+0.5rem)]",
+    },
+    {
+      status: "ready",
+      title: "Ready",
+      subtitle: "Waiting for service",
+      icon: CheckCircle,
+      accent: "text-emerald-500",
+      ring: "border-emerald-500/40",
+      action: "Mark as Served",
+      tooltip: "right-[calc(100%+0.5rem)]",
+    },
+    {
+      status: "served",
+      title: "Served",
+      subtitle: "Completed at table",
+      icon: CheckCheck,
+      accent: "text-sky-500",
+      ring: "border-sky-500/40",
+      action: "Print Receipt",
+      tooltip: "right-[calc(100%+0.5rem)]",
+    },
+  ] as const;
+
+  const getAdminOrderItems = (id: string): OrderDetailItem[] =>
+    KITCHEN_INITIAL.find((k) => k.id === id)?.items ?? [
+      { name: "Butter Chicken", qty: 1 },
+      { name: "Garlic Naan", qty: 3, note: "Served with extra butter" },
+    ];
 
   return (
     <div className="flex h-[calc(100vh-56px)] bg-background">
@@ -1820,7 +1936,7 @@ function AdminDashboard({
               {item.label}
               {item.id === "orders" && (
                 <span className="ml-auto text-xs bg-primary text-[#0b1326] px-1.5 py-0.5 rounded-full font-mono">
-                  5
+                  {orders.filter((o) => o.status !== "served").length}
                 </span>
               )}
             </button>
@@ -1917,137 +2033,237 @@ function AdminDashboard({
           )}
 
           {tab === "orders" && (
-            <div className="flex-1 flex overflow-hidden">
-              {/* ORDER LIST */}
-              <div className="w-72 border-r border-border overflow-y-auto p-4 space-y-2">
-                <h2 className="text-base font-semibold text-foreground mb-3">
-                  Active Orders
-                </h2>
-                {ADMIN_ORDERS.map((o) => (
-                  <button
-                    key={o.id}
-                    onClick={() => onSelectOrder(o.id)}
-                    className={`w-full text-left rounded-xl border-2 p-3 transition-all ${selectedOrder === o.id ? "border-primary " : `${orderStatusColors[o.status].bg} hover:shadow-sm`}`}
-                  >
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="font-mono font-bold text-foreground">
-                        Table {o.table}
-                      </span>
-                      <Badge
-                        color={
-                          orderStatusColors[o.status].badge as
-                            | "green"
-                            | "amber"
-                            | "orange"
-                        }
-                      >
-                        {orderStatusColors[o.status].label}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>
-                        {o.items} items · {o.ago}
-                      </span>
-                      <span className="font-mono font-medium text-foreground">
-                        ₹{o.value}
-                      </span>
-                    </div>
-                    <div className="mt-1.5">
-                      <span
-                        className={`text-xs px-1.5 py-0.5 rounded font-medium ${o.mode === "pay-first" ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"}`}
-                      >
-                        {o.mode === "pay-first" ? "Paid" : "Pay later"}
-                      </span>
-                    </div>
-                  </button>
-                ))}
+            <div className="flex-1 overflow-y-auto p-5">
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <h2 className="text-xl font-semibold text-foreground">
+                    Order Command Center
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Click on any ticket to preview the full table order.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground bg-[#131C2F] border border-border rounded-full px-3 py-2">
+                  <Activity className="w-3.5 h-3.5 text-primary" />
+                  Live kitchen sync
+                </div>
               </div>
 
-              {/* ORDER DETAIL */}
-              {selected ? (
-                <div className="flex-1 p-6 overflow-y-auto">
-                  <div className="max-w-sm">
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <h2 className="text-xl font-semibold text-foreground">
-                          Table {selected.table}
-                        </h2>
-                        <p className="text-muted-foreground text-sm">
-                          {selected.ago} · {selected.items} items
-                        </p>
-                      </div>
-                      <Badge
-                        color={
-                          orderStatusColors[selected.status].badge as
-                            | "green"
-                            | "amber"
-                            | "orange"
-                        }
-                      >
-                        {orderStatusColors[selected.status].label}
-                      </Badge>
-                    </div>
-                    <div className="space-y-2 mb-6">
-                      {KITCHEN_INITIAL.find(
-                        (k) => k.id === selected.id,
-                      )?.items.map((item, i) => (
-                        <div
-                          key={i}
-                          className="flex items-center justify-between py-2 border-b border-border last:border-0"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="w-5 h-5 bg-white rounded text-xs font-mono flex items-center justify-center text-[#0b1326]">
-                              {item.qty}
-                            </span>
-                            <span className="text-sm text-foreground">
-                              {item.name}
-                            </span>
+              <div className="grid grid-cols-4 gap-4">
+                {orderColumns.map((column) => {
+                  const columnOrders = orders.filter(
+                    (o) => o.status === column.status,
+                  );
+                  return (
+                    <div
+                      key={column.status}
+                      className={`relative min-h-[520px] overflow-visible rounded-2xl border ${column.ring} bg-[#131C2F]/70 p-3`}
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center">
+                            <column.icon className={`w-4 h-4 ${column.accent}`} />
                           </div>
-                          {"note" in item && (
-                            <span className="text-xs text-muted-foreground italic">
-                              {item.note}
-                            </span>
-                          )}
+                          <div>
+                            <h3 className="font-semibold text-foreground text-sm">
+                              {column.title}
+                            </h3>
+                            <p className="text-xs text-muted-foreground">
+                              {column.subtitle}
+                            </p>
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                    <div className="border-t border-border pt-4 mb-4">
-                      <div className="flex justify-between text-sm mb-1 text-muted-foreground">
-                        <span>Subtotal</span>
-                        <span className="font-mono">₹{selected.value}</span>
-                      </div>
-                      <div className="flex justify-between font-semibold">
-                        <span>Total</span>
-                        <span className="font-mono text-primary">
-                          ₹{selected.value + Math.round(selected.value * 0.05)}
+                        <span className={`text-xs font-mono ${column.accent}`}>
+                          {columnOrders.length}
                         </span>
                       </div>
+
+                      <div className="space-y-3">
+                        {columnOrders.map((o) => {
+                          const details = getAdminOrderItems(o.id);
+                          const tax = Math.round(o.value * 0.05);
+                          const total = o.value + tax;
+                          return (
+                            <div
+                              key={o.id}
+                              onClick={() =>
+                                onSelectOrder(selectedOrder === o.id ? null : o.id)
+                              }
+                              className={`relative rounded-2xl border-2 p-3 cursor-pointer transition-all hover:shadow-xl ${selectedOrder === o.id ? "z-[80] border-primary bg-primary/10" : `${orderStatusColors[o.status].bg} hover:border-primary/70`}`}
+                            >
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="font-mono font-bold text-foreground">
+                                  Table {o.table}
+                                </span>
+                                <Badge
+                                  color={
+                                    orderStatusColors[o.status].badge as
+                                      | "green"
+                                      | "amber"
+                                      | "orange"
+                                      | "blue"
+                                  }
+                                >
+                                  {orderStatusColors[o.status].label}
+                                </Badge>
+                              </div>
+                              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                <span>
+                                  {o.items} items · {o.ago}
+                                </span>
+                                <span className="font-mono font-medium text-foreground">
+                                  ₹{o.value}
+                                </span>
+                              </div>
+                              <div className="mt-3 flex items-center justify-between">
+                                <span
+                                  className={`text-xs px-2 py-1 rounded-full font-medium ${o.mode === "pay-first" ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"}`}
+                                >
+                                  {o.mode === "pay-first" ? "Paid" : "Pay later"}
+                                </span>
+                                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  {o.ago}
+                                </span>
+                              </div>
+
+                              <div
+                                onClick={(e) => e.stopPropagation()}
+                                className={`absolute top-0 z-[999] w-80 rounded-2xl border border-primary/40 bg-[#0B1326] p-4 text-left shadow-2xl shadow-black/50 ring-1 ring-white/10 ${selectedOrder === o.id ? "block" : "hidden"} ${column.tooltip}`}
+                              >
+                                <div className="flex items-start justify-between mb-3">
+                                  <div>
+                                    <p className="text-xs text-muted-foreground">
+                                      Order #{o.id}
+                                    </p>
+                                    <h4 className="text-lg font-semibold text-foreground">
+                                      Table {o.table}
+                                    </h4>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Badge
+                                      color={
+                                        orderStatusColors[o.status].badge as
+                                          | "green"
+                                          | "amber"
+                                          | "orange"
+                                          | "blue"
+                                      }
+                                    >
+                                      {orderStatusColors[o.status].label}
+                                    </Badge>
+                                    <button
+                                      onClick={() => onSelectOrder(null)}
+                                      className="w-7 h-7 rounded-full bg-white/10 text-muted-foreground hover:text-foreground hover:bg-white/15 flex items-center justify-center"
+                                    >
+                                      <X className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-2 mb-4">
+                                  <div className="rounded-xl bg-[#131C2F] p-2">
+                                    <p className="text-[10px] text-muted-foreground">
+                                      Items
+                                    </p>
+                                    <p className="text-sm font-mono text-foreground">
+                                      {o.items}
+                                    </p>
+                                  </div>
+                                  <div className="rounded-xl bg-[#131C2F] p-2">
+                                    <p className="text-[10px] text-muted-foreground">
+                                      Since
+                                    </p>
+                                    <p className="text-sm font-mono text-foreground">
+                                      {o.ago}
+                                    </p>
+                                  </div>
+                                  <div className="rounded-xl bg-[#131C2F] p-2">
+                                    <p className="text-[10px] text-muted-foreground">
+                                      Payment
+                                    </p>
+                                    <p className="text-sm font-mono text-foreground">
+                                      {o.mode === "pay-first" ? "Paid" : "Later"}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2 mb-4">
+                                  {details.map((item, i) => (
+                                    <div
+                                      key={i}
+                                      className="flex items-start justify-between gap-3 border-b border-border pb-2 last:border-0"
+                                    >
+                                      <div className="flex items-start gap-2">
+                                        <span className="w-5 h-5 bg-white rounded text-xs font-mono flex items-center justify-center text-[#0b1326] shrink-0">
+                                          {item.qty}
+                                        </span>
+                                        <div>
+                                          <p className="text-sm text-foreground">
+                                            {item.name}
+                                          </p>
+                                          {"note" in item && item.note && (
+                                            <p className="text-xs text-amber-500 italic">
+                                              {item.note}
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+
+                                <div className="border-t border-border pt-3 space-y-1">
+                                  <div className="flex justify-between text-xs text-muted-foreground">
+                                    <span>Subtotal</span>
+                                    <span className="font-mono">₹{o.value}</span>
+                                  </div>
+                                  <div className="flex justify-between text-xs text-muted-foreground">
+                                    <span>Taxes & charges</span>
+                                    <span className="font-mono">₹{tax}</span>
+                                  </div>
+                                  <div className="flex justify-between text-sm font-semibold text-foreground">
+                                    <span>Total</span>
+                                    <span className="font-mono text-primary">
+                                      ₹{total}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <button
+                                  onClick={() => onAdvanceOrder(o.id)}
+                                  disabled={
+                                    column.status === "cooking" ||
+                                    column.status === "served"
+                                  }
+                                  className={`mt-4 w-full rounded-xl border px-3 py-2 text-xs flex items-center justify-center gap-2 transition-colors ${
+                                    column.status === "new" ||
+                                    column.status === "ready"
+                                      ? "bg-primary text-[#0b1326] border-primary hover:bg-primary/90"
+                                      : "bg-white/5 text-muted-foreground border-border cursor-default"
+                                  }`}
+                                >
+                                  {column.status === "new" && (
+                                    <ChefHat className="w-3.5 h-3.5" />
+                                  )}
+                                  {column.status === "ready" && (
+                                    <CheckCheck className="w-3.5 h-3.5" />
+                                  )}
+                                  {column.status !== "new" &&
+                                    column.status !== "ready" && (
+                                      <Phone className="w-3.5 h-3.5" />
+                                    )}
+                                  {column.action}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      {selected.status === "new" && (
-                        <button className="w-full bg-primary text-[#0b1326] py-2.5 rounded-xl font-medium text-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
-                          <ChefHat className="w-4 h-4" /> Forward to Kitchen
-                        </button>
-                      )}
-                      {selected.status === "ready" && (
-                        <button className="w-full bg-emerald-600 text-white py-2.5 rounded-xl font-medium text-sm hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2">
-                          <CheckCheck className="w-4 h-4" /> Mark as Served
-                        </button>
-                      )}
-                      <button className="w-full border border-border text-muted-foreground py-2.5 rounded-xl font-medium text-sm hover:bg-muted transition-colors flex items-center justify-center gap-2">
-                        <Phone className="w-4 h-4" /> Notify Table
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex-1 flex items-center justify-center text-muted-foreground">
-                  <div className="text-center">
-                    <Package className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                    <p className="text-sm">Select an order to view details</p>
-                  </div>
-                </div>
-              )}
+                  );
+                })}
+              </div>
             </div>
           )}
 
