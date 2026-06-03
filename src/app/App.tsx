@@ -1736,17 +1736,17 @@ function AdminDashboard({
 
   const orderStatusColors = {
     new: {
-      bg: "bg-amber-50 border-amber-200",
+      bg: "bg-[#131C2F] border-amber-200 text-white",
       badge: "amber",
       label: "New Order",
     },
     cooking: {
-      bg: "bg-orange-50 border-orange-200",
+      bg: "bg-[#131C2F] border-orange-200 text-white",
       badge: "orange",
       label: "In Kitchen",
     },
     ready: {
-      bg: "bg-emerald-50 border-emerald-200",
+      bg: "bg-[#131C2F] border-emerald-200 text-white",
       badge: "green",
       label: "Ready",
     },
@@ -1792,7 +1792,7 @@ function AdminDashboard({
         <div className="p-5 border-b border-border">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <UtensilsCrossed className="w-4 h-4 text-white" />
+              <UtensilsCrossed className="w-4 h-4 text-[#0b1326]" />
             </div>
             <div>
               <div className="font-semibold text-sidebar-foreground text-sm">
@@ -1836,11 +1836,11 @@ function AdminDashboard({
       {/* MAIN */}
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* TOP METRICS */}
-        <div className="grid grid-cols-4 gap-4 p-5 border-b border-border bg-card">
+        <div className="grid grid-cols-4 gap-4 p-5 border-b border-border bg-[#131C2F]">
           {topMetrics.map((m) => (
             <div key={m.label} className="flex items-center gap-3">
               <div
-                className={`w-10 h-10 rounded-xl bg-muted flex items-center justify-center`}
+                className={`w-10 h-10 rounded-xl bg-white flex items-center justify-center`}
               >
                 <m.icon className={`w-5 h-5 ${m.color}`} />
               </div>
@@ -1927,7 +1927,7 @@ function AdminDashboard({
                   <button
                     key={o.id}
                     onClick={() => onSelectOrder(o.id)}
-                    className={`w-full text-left rounded-xl border-2 p-3 transition-all ${selectedOrder === o.id ? "border-primary bg-primary/5" : `${orderStatusColors[o.status].bg} hover:shadow-sm`}`}
+                    className={`w-full text-left rounded-xl border-2 p-3 transition-all ${selectedOrder === o.id ? "border-primary " : `${orderStatusColors[o.status].bg} hover:shadow-sm`}`}
                   >
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="font-mono font-bold text-foreground">
@@ -1996,7 +1996,7 @@ function AdminDashboard({
                           className="flex items-center justify-between py-2 border-b border-border last:border-0"
                         >
                           <div className="flex items-center gap-2">
-                            <span className="w-5 h-5 bg-muted rounded text-xs font-mono flex items-center justify-center text-muted-foreground">
+                            <span className="w-5 h-5 bg-white rounded text-xs font-mono flex items-center justify-center text-[#0b1326]">
                               {item.qty}
                             </span>
                             <span className="text-sm text-foreground">
@@ -2025,7 +2025,7 @@ function AdminDashboard({
                     </div>
                     <div className="space-y-2">
                       {selected.status === "new" && (
-                        <button className="w-full bg-primary text-white py-2.5 rounded-xl font-medium text-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
+                        <button className="w-full bg-primary text-[#0b1326] py-2.5 rounded-xl font-medium text-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
                           <ChefHat className="w-4 h-4" /> Forward to Kitchen
                         </button>
                       )}
@@ -2056,7 +2056,7 @@ function AdminDashboard({
               <h2 className="text-xl font-semibold text-foreground mb-6">
                 Analytics
               </h2>
-              <div className="grid grid-cols-2 gap-5 mb-6">
+              <div className="grid grid-cols-4 gap-5 mb-6">
                 {[
                   {
                     label: "Revenue this week",
@@ -2088,8 +2088,8 @@ function AdminDashboard({
                     className="bg-card border border-border rounded-2xl p-5"
                   >
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-9 h-9 bg-muted rounded-xl flex items-center justify-center">
-                        <m.icon className="w-4 h-4 text-primary" />
+                      <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center">
+                        <m.icon className="w-4 h-4 text-[#0b1326]" />
                       </div>
                       <span className="text-sm text-muted-foreground">
                         {m.label}
@@ -2231,11 +2231,11 @@ function KitchenDisplay({
 
   return (
     <div
-      className="min-h-screen bg-[#0D0B08] text-white"
+      className="min-h-screen bg-card text-white"
       style={{ fontFamily: "var(--font-mono)" }}
     >
       {/* KDS HEADER */}
-      <div className="border-b border-white/10 px-6 py-3 flex items-center justify-between bg-[#141210]">
+      <div className="border border-white/10 px-6 py-3 flex items-center justify-between bg-[#131C2F]">
         <div className="flex items-center gap-3">
           <ChefHat className="w-5 h-5 text-accent" />
           <span className="font-semibold text-white tracking-wide text-sm">
