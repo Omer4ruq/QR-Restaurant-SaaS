@@ -500,6 +500,13 @@ type KitchenOrder = {
   elapsed: number;
   priority: "urgent" | "high" | "normal";
 };
+type TableAddOnItem = {
+  id: string;
+  name: string;
+  image: string;
+  price: number;
+  qty: number;
+};
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
@@ -2035,6 +2042,15 @@ function AdminDashboard({
   waiterRequest: string | null;
 }) {
   const [selectedTable, setSelectedTable] = useState<number | null>(null);
+  const [tableAddOns, setTableAddOns] = useState<Record<number, TableAddOnItem[]>>(
+    {},
+  );
+  const [tableItemSearch, setTableItemSearch] = useState("");
+  const [tableItemQty, setTableItemQty] = useState(1);
+  const [customAddOnRows, setCustomAddOnRows] = useState([
+    { id: "custom-1", name: "", price: "" },
+  ]);
+  const [billPrintOpen, setBillPrintOpen] = useState(false);
   const [trackingOpen, setTrackingOpen] = useState(false);
   const [trackingQuery, setTrackingQuery] = useState("k1");
   const [analyticsPeriod, setAnalyticsPeriod] = useState<
@@ -2260,6 +2276,141 @@ function AdminDashboard({
         icon: CheckCircle,
       })),
   ];
+  const normalizedTableItemSearch = tableItemSearch.trim().toLowerCase();
+  const tableItemSearchResults = normalizedTableItemSearch
+    ? MENU_ITEMS.filter(
+        (item) =>
+          item.name.toLowerCase().includes(normalizedTableItemSearch) ||
+          item.category.toLowerCase().includes(normalizedTableItemSearch),
+      ).slice(0, 5)
+    : [];
+  const selectedTableAddOns = selectedTable ? tableAddOns[selectedTable] ?? [] : [];
+  const selectedTableAddOnTotal = selectedTableAddOns.reduce(
+    (sum, item) => sum + item.price * item.qty,
+    0,
+  );
+  const selectedTableOrder = selectedFloorTable
+    ? orders.find((order) => order.table === selectedFloorTable.id)
+    : null;
+  const selectedTableOrderItems = selectedTableOrder
+    ? getAdminOrderItems(selectedTableOrder.id)
+    : [];
+  const allTableAddOnTotal = Object.values(tableAddOns)
+    .flat()
+    .reduce((sum, item) => sum + item.price * item.qty, 0);
+  const selectedTableBillTotal =
+    (selectedFloorTable?.value ?? 0) + selectedTableAddOnTotal;
+  const selectedTableTax = Math.round(selectedTableBillTotal * 0.05);
+  const selectedTablePayable = selectedTableBillTotal + selectedTableTax;
+
+  const addItemToTable = (tableId: number, item: MenuItem) => {
+    const qtyToAdd = Math.max(1, tableItemQty);
+    setTableAddOns((prev) => {
+      const current = prev[tableId] ?? [];
+      const existing = current.find((addOn) => addOn.id === item.id);
+      return {
+        ...prev,
+        [tableId]: existing
+          ? current.map((addOn) =>
+              addOn.id === item.id
+                ? { ...addOn, qty: addOn.qty + qtyToAdd }
+                : addOn,
+            )
+          : [
+              ...current,
+              {
+                id: item.id,
+                name: item.name,
+                image: item.image,
+                price: item.price,
+                qty: qtyToAdd,
+              },
+            ],
+      };
+    });
+    setTableItemSearch("");
+    setTableItemQty(1);
+  };
+
+  const updateTableAddOnQty = (
+    tableId: number,
+    itemId: string,
+    nextQty: number,
+  ) => {
+    setTableAddOns((prev) => {
+      const current = prev[tableId] ?? [];
+      const updated = current
+        .map((item) =>
+          item.id === itemId ? { ...item, qty: Math.max(0, nextQty) } : item,
+        )
+        .filter((item) => item.qty > 0);
+
+      return { ...prev, [tableId]: updated };
+    });
+  };
+
+  const addCustomAddOnRow = () => {
+    setCustomAddOnRows((rows) => [
+      ...rows,
+      { id: `custom-${Date.now()}`, name: "", price: "" },
+    ]);
+  };
+
+  const updateCustomAddOnRow = (
+    rowId: string,
+    field: "name" | "price",
+    value: string,
+  ) => {
+    setCustomAddOnRows((rows) =>
+      rows.map((row) => (row.id === rowId ? { ...row, [field]: value } : row)),
+    );
+  };
+
+  const removeCustomAddOnRow = (rowId: string) => {
+    setCustomAddOnRows((rows) =>
+      rows.length === 1
+        ? [{ id: rowId, name: "", price: "" }]
+        : rows.filter((row) => row.id !== rowId),
+    );
+  };
+
+  const addCustomItemsToTable = (tableId: number) => {
+    const validRows = customAddOnRows
+      .map((row) => ({
+        name: row.name.trim(),
+        price: Math.max(0, Number(row.price) || 0),
+      }))
+      .filter((row) => row.name);
+
+    if (validRows.length === 0) return;
+
+    setTableAddOns((prev) => {
+      const current = prev[tableId] ?? [];
+      const next = [...current];
+
+      validRows.forEach((row) => {
+        const id = `custom-${row.name.toLowerCase().replace(/\s+/g, "-")}`;
+        const existing = next.find((addOn) => addOn.id === id);
+        if (existing) {
+          const index = next.findIndex((addOn) => addOn.id === id);
+          next[index] = { ...existing, qty: existing.qty + 1 };
+        } else {
+          next.push({
+            id,
+            name: row.name,
+            image:
+              "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=120&h=120&fit=crop&auto=format",
+            price: row.price,
+            qty: 1,
+          });
+        }
+      });
+
+      return { ...prev, [tableId]: next };
+    });
+
+    setCustomAddOnRows([{ id: `custom-${Date.now()}`, name: "", price: "" }]);
+  };
 
   const analyticsData = {
     Daily: {
@@ -2811,7 +2962,7 @@ function AdminDashboard({
                   }}
                 />
 
-                <div className="relative grid min-h-[510px] grid-cols-[240px_1fr_280px] gap-4">
+                <div className="relative grid min-h-[510px] grid-cols-[220px_minmax(0,1fr)_360px] gap-4">
                   <aside className="rounded-2xl border border-white/10 bg-[#0B1326]/70 p-4 shadow-xl">
                     <p className="text-xs uppercase tracking-widest text-muted-foreground">
                       Floor Summary
@@ -2865,7 +3016,7 @@ function AdminDashboard({
                           Floor Bill
                         </p>
                         <p className="font-mono text-sm text-primary">
-                          ৳{floorRevenue}
+                          ৳{floorRevenue + allTableAddOnTotal}
                         </p>
                       </div>
                       <div className="rounded-xl bg-[#131C2F] p-3">
@@ -2877,7 +3028,7 @@ function AdminDashboard({
                     </div>
                   </aside>
 
-                  <div className="mx-auto grid w-full max-w-[570px] grid-cols-4 content-center justify-items-center gap-x-8 gap-y-3">
+                  <div className="mx-auto grid w-full max-w-[520px] grid-cols-4 content-center justify-items-center gap-x-6 gap-y-3">
                     {diningFloorTables.map((table) => {
                       const isSelected = selectedTable === table.id;
                       const isAlert = table.status === "alert";
@@ -2892,7 +3043,7 @@ function AdminDashboard({
                             onClick={() =>
                               setSelectedTable(isSelected ? null : table.id)
                             }
-                            className={`h-[120px] w-[120px] rounded-full flex flex-col items-center justify-center transition-all ${
+                            className={`h-[108px] w-[108px] rounded-full flex flex-col items-center justify-center transition-all ${
                               isSelected ? "scale-105 ring-2 ring-primary" : ""
                             } ${
                               isAlert
@@ -2948,7 +3099,7 @@ function AdminDashboard({
                     })}
                   </div>
 
-                  <aside className="rounded-2xl border border-white/10 bg-[#0B1326]/70 p-4 shadow-xl">
+                  <aside className="min-w-0 rounded-2xl border border-white/10 bg-[#0B1326]/70 p-4 shadow-xl ">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -3000,7 +3151,7 @@ function AdminDashboard({
                       )}
                     </div>
 
-                    <div className="mt-4 rounded-2xl border min-h-[300px] border-primary/20 bg-primary/5 p-3">
+                    <div className="mt-4 rounded-2xl border min-h-[320px] border-primary/20 bg-primary/5 p-3">
                       <div className="flex items-start justify-between">
                         <div>
                           <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -3026,37 +3177,309 @@ function AdminDashboard({
                       </div>
 
                       {selectedFloorTable ? (
-                        <div className="mt-3 space-y-1.5 text-sm">
-                          {[
-                            ["Seats", selectedFloorTable.cap],
-                            ["Guests", selectedFloorTable.guests || "-"],
-                            ["Time", selectedFloorTable.time],
-                            [
-                              "Status",
-                              selectedFloorTable.alert
-                                ? selectedFloorTable.alert === "waiter"
-                                  ? "Waiter requested"
-                                  : "Bill requested"
-                                : selectedFloorTable.status,
-                            ],
-                            [
-                              "Order",
-                              selectedFloorTable.order ?? "No active order",
-                            ],
-                            ["Current Bill", `৳${selectedFloorTable.value}`],
-                          ].map(([label, value]) => (
-                            <div
-                              key={label}
-                              className="flex justify-between border-b border-border pb-2 last:border-0 last:pb-0"
-                            >
-                              <span className="text-muted-foreground">
-                                {label}
-                              </span>
-                              <span className="font-mono text-foreground text-right">
-                                {value}
-                              </span>
+                        <div className="mt-3 space-y-3 text-sm">
+                          <div className="space-y-1.5">
+                            {[
+                              ["Seats", selectedFloorTable.cap],
+                              ["Guests", selectedFloorTable.guests || "-"],
+                              ["Time", selectedFloorTable.time],
+                              [
+                                "Status",
+                                selectedFloorTable.alert
+                                  ? selectedFloorTable.alert === "waiter"
+                                    ? "Waiter requested"
+                                    : "Bill requested"
+                                  : selectedFloorTable.status,
+                              ],
+                              [
+                                "Order",
+                                selectedFloorTable.order ?? "No active order",
+                              ],
+                              ["Current Bill", `৳${selectedTableBillTotal}`],
+                            ].map(([label, value]) => (
+                              <div
+                                key={label}
+                                className="flex justify-between border-b border-border pb-2 last:border-0 last:pb-0"
+                              >
+                                <span className="text-muted-foreground">
+                                  {label}
+                                </span>
+                                <span className="font-mono text-foreground text-right">
+                                  {value}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="rounded-2xl border border-primary/20 bg-[#0B1326] p-3">
+                            <div className="mb-3 flex items-center justify-between gap-2">
+                              <div className="min-w-0">
+                                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                                  Add menu item
+                                </p>
+                                <p className="text-xs text-foreground">
+                                  Search, choose quantity, then add.
+                                </p>
+                              </div>
+                              <Plus className="w-4 h-4 shrink-0 text-primary" />
                             </div>
-                          ))}
+
+                            <div className="mb-2 flex w-full items-center gap-2 rounded-xl border border-border bg-[#131C2F] px-2 py-2">
+                              <Search className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
+                              <input
+                                value={tableItemSearch}
+                                onChange={(e) =>
+                                  setTableItemSearch(e.target.value)
+                                }
+                                placeholder="Search menu item"
+                                className="min-w-0 flex-1 bg-transparent text-xs text-foreground placeholder:text-muted-foreground outline-none"
+                              />
+                            </div>
+
+                            {/* <div className="mb-3 flex items-center justify-between rounded-xl border border-border bg-[#131C2F] px-2 py-1.5">
+                              <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                                Quantity
+                              </span>
+                              <div className="flex items-center">
+                                <button
+                                  onClick={() =>
+                                    setTableItemQty((qty) =>
+                                      Math.max(1, qty - 1),
+                                    )
+                                  }
+                                  className="px-2 py-1 text-muted-foreground"
+                                >
+                                  <Minus className="w-3.5 h-3.5" />
+                                </button>
+                                <input
+                                  type="number"
+                                  min={1}
+                                  value={tableItemQty}
+                                  onChange={(e) =>
+                                    setTableItemQty(
+                                      Math.max(1, Number(e.target.value) || 1),
+                                    )
+                                  }
+                                  className="w-10 bg-transparent text-center text-xs font-mono text-foreground outline-none"
+                                />
+                                <button
+                                  onClick={() =>
+                                    setTableItemQty((qty) => qty + 1)
+                                  }
+                                  className="px-2 py-1 text-primary"
+                                >
+                                  <Plus className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div> */}
+
+                            <div className="max-h-32 space-y-2 overflow-y-auto pr-1">
+                              {tableItemSearchResults.map((item) => (
+                                <button
+                                  key={item.id}
+                                  onClick={() =>
+                                    addItemToTable(selectedFloorTable.id, item)
+                                  }
+                                  className="flex w-full items-center gap-2 rounded-xl border border-border bg-[#131C2F] px-2 py-2 text-left hover:border-primary/50 hover:bg-primary/10 transition-colors"
+                                >
+                                  <div className="h-9 w-9 shrink-0 overflow-hidden rounded-lg bg-muted">
+                                    <img
+                                      src={item.image}
+                                      alt={item.name}
+                                      className="h-full w-full object-cover"
+                                    />
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate text-xs text-foreground">
+                                      {item.name}
+                                    </p>
+                                    <p className="font-mono text-[10px] text-primary">
+                                      ৳{item.price}
+                                    </p>
+                                  </div>
+                                  <span className="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 font-mono text-[10px] text-primary">
+                                    +{tableItemQty}
+                                  </span>
+                                </button>
+                              ))}
+                              {normalizedTableItemSearch &&
+                                tableItemSearchResults.length === 0 && (
+                                  <div className="rounded-xl border border-border bg-[#131C2F] px-3 py-3 text-center text-xs text-muted-foreground">
+                                    No menu item found.
+                                  </div>
+                                )}
+                            </div>
+
+                            <div className="mt-3 rounded-xl border border-border bg-[#131C2F] p-2.5">
+                              <div className="mb-2 flex items-center justify-between gap-2">
+                                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                                  Additional custom item
+                                </p>
+                                {/* <button
+                                  onClick={addCustomAddOnRow}
+                                  className="shrink-0 rounded-lg border border-primary/30 px-2 py-1 text-[10px] font-medium text-primary hover:bg-primary/10"
+                                >
+                                  + Add field
+                                </button> */}
+                              </div>
+
+                              <div className="max-h-40 space-y-2 overflow-y-auto pr-1">
+                                {customAddOnRows.map((row, index) => (
+                                  <div
+                                    key={row.id}
+                                    className=""
+                                  >
+                                    <div className="mb-2 flex items-center justify-between">
+                                      {/* <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                                        Item {index + 1}
+                                      </span> */}
+                                      {customAddOnRows.length > 1 && (
+                                        <button
+                                          onClick={() =>
+                                            removeCustomAddOnRow(row.id)
+                                          }
+                                          className="text-[10px] text-muted-foreground hover:text-foreground"
+                                        >
+                                          Remove
+                                        </button>
+                                      )}
+                                    </div>
+                                    <input
+                                      value={row.name}
+                                      onChange={(e) =>
+                                        updateCustomAddOnRow(
+                                          row.id,
+                                          "name",
+                                          e.target.value,
+                                        )
+                                      }
+                                      placeholder="Item name"
+                                      className="mb-2 w-full rounded-xl border border-border bg-[#131C2F] px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground outline-none"
+                                    />
+                                    <input
+                                      type="number"
+                                      min={0}
+                                      value={row.price}
+                                      onChange={(e) =>
+                                        updateCustomAddOnRow(
+                                          row.id,
+                                          "price",
+                                          e.target.value,
+                                        )
+                                      }
+                                      placeholder="Price"
+                                      className="w-full rounded-xl border border-border bg-[#131C2F] px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground outline-none"
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+
+                              <button
+                                onClick={() =>
+                                  addCustomItemsToTable(selectedFloorTable.id)
+                                }
+                                className="mt-2 w-full rounded-xl bg-primary py-2 text-xs font-semibold text-[#0b1326] hover:bg-primary/90"
+                              >
+                                Add custom items
+                              </button>
+                            </div>
+                          </div>
+
+                          {selectedTableAddOns.length > 0 && (
+                            <div className="rounded-2xl border border-border bg-[#0B1326] p-3">
+                              <p className="mb-2 text-[10px] uppercase tracking-widest text-muted-foreground">
+                                Added by restaurant
+                              </p>
+                              <div className="space-y-2">
+                                {selectedTableAddOns.map((item) => (
+                                  <div
+                                    key={item.id}
+                                    className="rounded-xl border border-border bg-[#131C2F] p-2 text-xs"
+                                  >
+                                    <div className="flex items-center justify-between gap-2">
+                                      <div className="flex min-w-0 items-center gap-2">
+                                        <img
+                                          src={item.image}
+                                          alt={item.name}
+                                          className="h-8 w-8 rounded-lg object-cover"
+                                        />
+                                        <div className="min-w-0">
+                                          <p className="truncate text-foreground">
+                                            {item.name}
+                                          </p>
+                                          <p className="font-mono text-[10px] text-muted-foreground">
+                                            ৳{item.price} each
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <span className="font-mono text-primary">
+                                        ৳{item.price * item.qty}
+                                      </span>
+                                    </div>
+                                    <div className="mt-2 flex items-center justify-between rounded-lg border border-border bg-[#0B1326] px-2 py-1">
+                                      <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                                        Qty
+                                      </span>
+                                      <div className="flex items-center">
+                                        <button
+                                          onClick={() =>
+                                            updateTableAddOnQty(
+                                              selectedFloorTable.id,
+                                              item.id,
+                                              item.qty - 1,
+                                            )
+                                          }
+                                          className="px-2 py-1 text-muted-foreground hover:text-foreground"
+                                        >
+                                          <Minus className="w-3.5 h-3.5" />
+                                        </button>
+                                        <input
+                                          type="number"
+                                          min={0}
+                                          value={item.qty}
+                                          onChange={(e) =>
+                                            updateTableAddOnQty(
+                                              selectedFloorTable.id,
+                                              item.id,
+                                              Number(e.target.value) || 0,
+                                            )
+                                          }
+                                          className="w-10 bg-transparent text-center font-mono text-xs text-foreground outline-none"
+                                        />
+                                        <button
+                                          onClick={() =>
+                                            updateTableAddOnQty(
+                                              selectedFloorTable.id,
+                                              item.id,
+                                              item.qty + 1,
+                                            )
+                                          }
+                                          className="px-2 py-1 text-primary"
+                                        >
+                                          <Plus className="w-3.5 h-3.5" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                              <div className="mt-2 flex justify-between border-t border-border pt-2 text-xs">
+                                <span className="text-muted-foreground">
+                                  Add-on total
+                                </span>
+                                <span className="font-mono text-primary">
+                                  ৳{selectedTableAddOnTotal}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          <button
+                            onClick={() => setBillPrintOpen(true)}
+                            className="w-full rounded-2xl bg-primary py-2.5 text-xs font-semibold text-[#0b1326] hover:bg-primary/90 transition-colors"
+                          >
+                            Print Bill
+                          </button>
                         </div>
                       ) : (
                         <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
@@ -3079,6 +3502,140 @@ function AdminDashboard({
                       </p>
                     </div> */}
                   </aside>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {billPrintOpen && selectedFloorTable && (
+            <div className="fixed inset-0 z-[210] flex items-center justify-center bg-black/60 px-6">
+              <div className="w-full max-w-md rounded-3xl border border-primary/30 bg-[#0B1326] p-5 shadow-2xl shadow-black/60 ring-1 ring-white/10">
+                <div className="mb-4 flex items-start justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.25em] text-primary">
+                      Bill Print Preview
+                    </p>
+                    <h3
+                      className="mt-1 text-2xl text-foreground"
+                      style={{ fontFamily: "var(--font-display)" }}
+                    >
+                      Table {selectedFloorTable.id} Receipt
+                    </h3>
+                  </div>
+                  <button
+                    onClick={() => setBillPrintOpen(false)}
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-muted-foreground hover:bg-white/15 hover:text-foreground"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                  <div className="mb-4 flex items-center justify-between border-b border-border pb-3 text-xs">
+                    <div>
+                      <p className="font-semibold text-foreground">
+                        QR Restaurant SaaS
+                      </p>
+                      <p className="text-muted-foreground">
+                        Order {selectedTableOrder?.id ?? "Walk-in add-on"}
+                      </p>
+                    </div>
+                    <div className="text-right font-mono text-muted-foreground">
+                      <p>T{selectedFloorTable.id}</p>
+                      <p>{selectedFloorTable.time}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    {selectedTableOrderItems.length > 0 ? (
+                      selectedTableOrderItems.map((item) => (
+                        <div
+                          key={`${item.name}-${item.qty}`}
+                          className="flex items-start justify-between gap-3 text-sm"
+                        >
+                          <div>
+                            <p className="text-foreground">
+                              {item.qty}× {item.name}
+                            </p>
+                            {item.note && (
+                              <p className="text-[11px] text-muted-foreground">
+                                {item.note}
+                              </p>
+                            )}
+                          </div>
+                          <span className="font-mono text-muted-foreground">
+                            Included
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="rounded-xl border border-border bg-[#131C2F] px-3 py-3 text-xs text-muted-foreground">
+                        No synced kitchen order for this table.
+                      </div>
+                    )}
+
+                    {selectedTableAddOns.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between gap-3 text-sm"
+                      >
+                        <div className="flex min-w-0 items-center gap-2">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="h-8 w-8 rounded-lg object-cover"
+                          />
+                          <p className="truncate text-foreground">
+                            {item.qty}× {item.name}
+                          </p>
+                        </div>
+                        <span className="font-mono text-primary">
+                          ৳{item.price * item.qty}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 space-y-2 border-t border-border pt-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Base bill</span>
+                      <span className="font-mono text-foreground">
+                        ৳{selectedFloorTable.value}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Add-ons</span>
+                      <span className="font-mono text-foreground">
+                        ৳{selectedTableAddOnTotal}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">VAT 5%</span>
+                      <span className="font-mono text-foreground">
+                        ৳{selectedTableTax}
+                      </span>
+                    </div>
+                    <div className="flex justify-between border-t border-border pt-2 text-base">
+                      <span className="font-semibold text-foreground">
+                        Payable
+                      </span>
+                      <span className="font-mono font-semibold text-primary">
+                        ৳{selectedTablePayable}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setBillPrintOpen(false)}
+                    className="rounded-2xl border border-border bg-[#131C2F] py-2.5 text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    Close
+                  </button>
+                  <button className="rounded-2xl bg-primary py-2.5 text-sm font-semibold text-[#0b1326]">
+                    Send to Printer
+                  </button>
                 </div>
               </div>
             </div>
