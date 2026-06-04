@@ -495,7 +495,7 @@ type AdminOrder = Omit<(typeof ADMIN_ORDERS)[number], "status"> & {
 type KitchenOrder = {
   id: string;
   table: number;
-  status: "new" | "cooking" | "ready";
+  status: "new" | "cooking" | "ready" | "served";
   items: OrderDetailItem[];
   elapsed: number;
   priority: "urgent" | "high" | "normal";
@@ -653,6 +653,13 @@ export default function App() {
         ),
       );
     }
+    if (current?.status === "ready") {
+      setKitchenOrders((prev) =>
+        prev.map((order) =>
+          order.id === id ? { ...order, status: "served" } : order,
+        ),
+      );
+    }
   };
 
   const advanceOrder = (id: string) => {
@@ -665,13 +672,16 @@ export default function App() {
               status:
                 o.status === "new"
                   ? "cooking"
-                  : ("ready" as KitchenOrder["status"]),
+                  : o.status === "cooking"
+                    ? "ready"
+                    : "served",
             },
       ),
     );
     const kitchenOrder = kitchenOrders.find((o) => o.id === id);
     if (kitchenOrder?.status === "new") updateAdminOrderStatus(id, "cooking");
     if (kitchenOrder?.status === "cooking") updateAdminOrderStatus(id, "ready");
+    if (kitchenOrder?.status === "ready") updateAdminOrderStatus(id, "served");
   };
 
   const sendChat = () => {
@@ -3969,8 +3979,15 @@ function KitchenDisplay({
       status: "ready",
       label: "Ready to Serve",
       color: "text-emerald-400 border-emerald-500/30",
-      btn: "Served ✓",
+      btn: "Mark Served",
       btnBg: "bg-emerald-500 hover:bg-emerald-600",
+    },
+    {
+      status: "served",
+      label: "Served",
+      color: "text-sky-400 border-sky-500/30",
+      btn: "Completed",
+      btnBg: "bg-sky-500 hover:bg-sky-600",
     },
   ];
 
@@ -4023,6 +4040,10 @@ function KitchenDisplay({
             <Circle className="w-2 h-2 fill-emerald-400 text-emerald-400" />
             {orders.filter((o) => o.status === "ready").length} Ready
           </span>
+          <span className="flex items-center gap-1.5">
+            <Circle className="w-2 h-2 fill-sky-400 text-sky-400" />
+            {orders.filter((o) => o.status === "served").length} Served
+          </span>
           <span className="text-white/30">|</span>
           <AlarmClock className="w-4 h-4 text-white/30" />
           <span className="font-mono text-white/50">09:41 AM</span>
@@ -4030,7 +4051,7 @@ function KitchenDisplay({
       </div>
 
       {/* COLUMNS */}
-      <div className="grid grid-cols-3 gap-0 h-[calc(100vh-57px-56px)]">
+      <div className="grid grid-cols-4 gap-0 h-[calc(100vh-57px-56px)]">
         {cols.map((col) => {
           const colOrders = orders.filter((o) => o.status === col.status);
           return (
@@ -4046,7 +4067,9 @@ function KitchenDisplay({
                     ? "rgba(245,158,11,0.2)"
                     : col.color.includes("orange")
                       ? "rgba(249,115,22,0.2)"
-                      : "rgba(52,211,153,0.2)",
+                      : col.color.includes("sky")
+                        ? "rgba(56,189,248,0.2)"
+                        : "rgba(52,211,153,0.2)",
                 }}
               >
                 <span
@@ -4113,7 +4136,7 @@ function KitchenDisplay({
                         </div>
                       ))}
                     </div>
-                    {col.status !== "ready" && (
+                    {col.status !== "served" && (
                       <div className="px-4 pb-3">
                         <button
                           onClick={() => onAdvance(order.id)}
@@ -4123,10 +4146,10 @@ function KitchenDisplay({
                         </button>
                       </div>
                     )}
-                    {col.status === "ready" && (
+                    {col.status === "served" && (
                       <div className="px-4 pb-3">
-                        <div className="w-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-semibold py-2.5 rounded-lg text-center tracking-wide">
-                          ✓ Ready for service
+                        <div className="w-full bg-sky-500/20 border border-sky-500/30 text-sky-400 text-xs font-semibold py-2.5 rounded-lg text-center tracking-wide">
+                          ✓ Served to table
                         </div>
                       </div>
                     )}
