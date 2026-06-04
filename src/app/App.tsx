@@ -2025,6 +2025,8 @@ function AdminDashboard({
   waiterRequest: string | null;
 }) {
   const [selectedTable, setSelectedTable] = useState<number | null>(null);
+  const [trackingOpen, setTrackingOpen] = useState(false);
+  const [trackingQuery, setTrackingQuery] = useState("k1");
   const [analyticsPeriod, setAnalyticsPeriod] = useState<
     "Daily" | "Weekly" | "Monthly" | "Yearly"
   >("Weekly");
@@ -2156,6 +2158,22 @@ function AdminDashboard({
       { name: "Butter Chicken", qty: 1 },
       { name: "Garlic Naan", qty: 3, note: "Served with extra butter" },
     ];
+
+  const normalizedTrackingQuery = trackingQuery.trim().toLowerCase();
+  const trackedOrder =
+    orders.find(
+      (order) =>
+        order.id.toLowerCase() === normalizedTrackingQuery ||
+        String(order.table) === normalizedTrackingQuery ||
+        `table ${order.table}` === normalizedTrackingQuery,
+    ) ?? null;
+  const trackedOrderItems = trackedOrder
+    ? getAdminOrderItems(trackedOrder.id)
+    : [];
+  const trackedOrderTax = trackedOrder ? Math.round(trackedOrder.value * 0.05) : 0;
+  const trackedOrderTotal = trackedOrder
+    ? trackedOrder.value + trackedOrderTax
+    : 0;
 
   const diningFloorTables = Array.from({ length: 15 }, (_, index) => {
     const id = index + 1;
@@ -3067,11 +3085,202 @@ function AdminDashboard({
                     Click on any ticket to preview the full table order.
                   </p>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground bg-[#131C2F] border border-border rounded-full px-3 py-2">
-                  <Activity className="w-3.5 h-3.5 text-primary" />
-                  Live kitchen sync
-                </div>
+                <button
+                  onClick={() => setTrackingOpen(true)}
+                  className="flex items-center gap-2 text-xs text-primary bg-[#131C2F] border border-primary/30 rounded-full px-3 py-2 hover:bg-primary/10 transition-colors"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  Order Tracking
+                </button>
               </div>
+
+              {trackingOpen && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 px-6">
+                  <div className="w-full max-w-3xl rounded-3xl border border-primary/30 bg-[#0B1326] p-6 shadow-2xl shadow-black/60 ring-1 ring-white/10">
+                    <div className="mb-5 flex items-start justify-between">
+                      <div>
+                        <p className="text-xs uppercase tracking-widest text-muted-foreground">
+                          Customer Order Lookup
+                        </p>
+                        <h3
+                          className="mt-1 text-2xl text-primary"
+                          style={{ fontFamily: "var(--font-display)" }}
+                        >
+                          Order Tracking
+                        </h3>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Search by order number like k1, k5, ord-012 or by table
+                          number.
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setTrackingOpen(false)}
+                        className="w-9 h-9 rounded-full bg-white/10 text-muted-foreground hover:bg-white/15 hover:text-foreground flex items-center justify-center"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="mb-5 flex gap-3">
+                      <div className="flex flex-1 items-center gap-3 rounded-2xl border border-border bg-[#131C2F] px-4 py-3">
+                        <Hash className="w-4 h-4 text-primary" />
+                        <input
+                          value={trackingQuery}
+                          onChange={(e) => setTrackingQuery(e.target.value)}
+                          placeholder="Enter order number or table number"
+                          className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+                        />
+                      </div>
+                      <div className="hidden items-center rounded-2xl border border-border bg-[#131C2F] px-4 text-xs text-muted-foreground md:flex">
+                        Try: k1, k3, table 7
+                      </div>
+                    </div>
+
+                    {trackedOrder ? (
+                      <div className="grid grid-cols-5 gap-5">
+                        <div className="col-span-2 rounded-2xl border border-border bg-[#131C2F] p-4">
+                          <div className="mb-4 flex items-start justify-between">
+                            <div>
+                              <p className="text-xs text-muted-foreground">
+                                Order #{trackedOrder.id}
+                              </p>
+                              <h4 className="text-xl font-semibold text-foreground">
+                                Table {trackedOrder.table}
+                              </h4>
+                            </div>
+                            <Badge
+                              color={
+                                orderStatusColors[trackedOrder.status].badge as
+                                  | "green"
+                                  | "amber"
+                                  | "orange"
+                                  | "blue"
+                              }
+                            >
+                              {orderStatusColors[trackedOrder.status].label}
+                            </Badge>
+                          </div>
+                          <div className="space-y-2 text-sm">
+                            {[
+                              ["Last update", trackedOrder.ago],
+                              ["Items", trackedOrder.items],
+                              [
+                                "Payment",
+                                trackedOrder.mode === "pay-first"
+                                  ? "Paid online"
+                                  : "Pay after eating",
+                              ],
+                              ["Subtotal", `৳${trackedOrder.value}`],
+                              ["Taxes & charges", `৳${trackedOrderTax}`],
+                              ["Total", `৳${trackedOrderTotal}`],
+                            ].map(([label, value]) => (
+                              <div
+                                key={label}
+                                className="flex justify-between border-b border-border pb-2 last:border-0"
+                              >
+                                <span className="text-muted-foreground">
+                                  {label}
+                                </span>
+                                <span className="font-mono text-foreground text-right">
+                                  {value}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="col-span-3 rounded-2xl border border-border bg-[#131C2F] p-4">
+                          <h4 className="mb-3 font-semibold text-foreground">
+                            Order Items
+                          </h4>
+                          <div className="mb-5 space-y-2">
+                            {trackedOrderItems.map((item, index) => (
+                              <div
+                                key={`${item.name}-${index}`}
+                                className="flex items-start justify-between rounded-xl bg-[#0B1326] px-3 py-2"
+                              >
+                                <div className="flex items-start gap-2">
+                                  <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded bg-white text-xs font-mono text-[#0b1326]">
+                                    {item.qty}
+                                  </span>
+                                  <div>
+                                    <p className="text-sm text-foreground">
+                                      {item.name}
+                                    </p>
+                                    {item.note && (
+                                      <p className="text-xs italic text-amber-400">
+                                        {item.note}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          <h4 className="mb-3 font-semibold text-foreground">
+                            Tracking Timeline
+                          </h4>
+                          <div className="grid grid-cols-4 gap-2">
+                            {[
+                              {
+                                label: "Received",
+                                active: true,
+                                icon: Package,
+                              },
+                              {
+                                label: "In Kitchen",
+                                active:
+                                  trackedOrder.status === "cooking" ||
+                                  trackedOrder.status === "ready" ||
+                                  trackedOrder.status === "served",
+                                icon: ChefHat,
+                              },
+                              {
+                                label: "Ready",
+                                active:
+                                  trackedOrder.status === "ready" ||
+                                  trackedOrder.status === "served",
+                                icon: CheckCircle,
+                              },
+                              {
+                                label: "Served",
+                                active: trackedOrder.status === "served",
+                                icon: CheckCheck,
+                              },
+                            ].map((step) => (
+                              <div
+                                key={step.label}
+                                className={`rounded-xl border px-3 py-3 text-center ${
+                                  step.active
+                                    ? "border-primary/40 bg-primary/10 text-primary"
+                                    : "border-border bg-[#0B1326] text-muted-foreground"
+                                }`}
+                              >
+                                <step.icon className="mx-auto mb-1 h-4 w-4" />
+                                <p className="text-[11px] font-medium">
+                                  {step.label}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl border border-red-900/40 bg-red-950/20 p-8 text-center">
+                        <Search className="mx-auto mb-3 h-8 w-8 text-red-300" />
+                        <p className="font-semibold text-red-100">
+                          No order found
+                        </p>
+                        <p className="mt-1 text-sm text-red-100/70">
+                          Check the order number or try a table number from the
+                          active orders.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-4 gap-4">
                 {orderColumns.map((column) => {
