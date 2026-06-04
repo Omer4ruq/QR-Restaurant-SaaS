@@ -51,7 +51,7 @@ const RESTAURANTS = [
     cuisine: "North Indian",
     rating: 4.8,
     reviews: 1240,
-    price: "$$",
+    price: "৳৳",
     location: "Koramangala, Bangalore",
     distance: "0.8 km",
     image:
@@ -67,7 +67,7 @@ const RESTAURANTS = [
     cuisine: "Japanese",
     rating: 4.6,
     reviews: 890,
-    price: "$$$",
+    price: "৳৳",
     location: "Indiranagar, Bangalore",
     distance: "1.2 km",
     image:
@@ -83,7 +83,7 @@ const RESTAURANTS = [
     cuisine: "Italian",
     rating: 4.7,
     reviews: 2100,
-    price: "$$$",
+    price: "৳৳৳",
     location: "HSR Layout, Bangalore",
     distance: "2.1 km",
     image:
@@ -99,7 +99,7 @@ const RESTAURANTS = [
     cuisine: "BBQ & Grills",
     rating: 4.5,
     reviews: 650,
-    price: "$$",
+    price: "৳৳",
     location: "JP Nagar, Bangalore",
     distance: "3.4 km",
     image:
@@ -115,7 +115,7 @@ const RESTAURANTS = [
     cuisine: "Healthy & Vegan",
     rating: 4.4,
     reviews: 420,
-    price: "$$",
+    price: "৳৳",
     location: "Whitefield, Bangalore",
     distance: "5.2 km",
     image:
@@ -131,7 +131,7 @@ const RESTAURANTS = [
     cuisine: "Mexican",
     rating: 4.3,
     reviews: 780,
-    price: "$",
+    price: "৳",
     location: "Electronic City, Bangalore",
     distance: "7.8 km",
     image:
@@ -465,11 +465,11 @@ const ADMIN_ORDERS = [
 ];
 
 const AI_RESPONSES = [
-  "For **₹500 budget for two**, head to **Spice Garden** — their Butter Chicken + Garlic Naan combo is ₹428 and is consistently voted the best value meal in Koramangala. Rated 4.8 with 1,240 reviews.",
-  "For **vegetarian under ₹300**, **Green Bowl** is your best pick! Their Paneer Power Bowl is ₹280, certified organic, very filling, and loved by regulars. Open now, ready in 15 min.",
-  "If you want **something fast (under 20 min)**, **Taco Libre** is nearest and serves fresh loaded tacos for two around ₹350. Very casual, great if you're in a hurry.",
-  "**Tokyo Ramen Co.** is the right call for a cozy dinner with someone special — Tonkotsu Ramen is ₹420, portions are huge and the atmosphere is warm. Book early on weekends.",
-  "For a **family dinner**, **Il Forno** offers wood-fired pizza platters for 4 around ₹1,600. Note — they're closed today, but open from 11am tomorrow. Reserve a table tonight.",
+  "For **৳500 budget for two**, head to **Spice Garden** — their Butter Chicken + Garlic Naan combo is ৳428 and is consistently voted the best value meal in Koramangala. Rated 4.8 with 1,240 reviews.",
+  "For **vegetarian under ৳300**, **Green Bowl** is your best pick! Their Paneer Power Bowl is ৳280, certified organic, very filling, and loved by regulars. Open now, ready in 15 min.",
+  "If you want **something fast (under 20 min)**, **Taco Libre** is nearest and serves fresh loaded tacos for two around ৳350. Very casual, great if you're in a hurry.",
+  "**Tokyo Ramen Co.** is the right call for a cozy dinner with someone special — Tonkotsu Ramen is ৳420, portions are huge and the atmosphere is warm. Book early on weekends.",
+  "For a **family dinner**, **Il Forno** offers wood-fired pizza platters for 4 around ৳1,600. Note — they're closed today, but open from 11am tomorrow. Reserve a table tonight.",
 ];
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
@@ -564,8 +564,7 @@ export default function App() {
     "tables",
   );
   const [selectedOrder, setSelectedOrder] = useState<string | null>("k1");
-  const [adminOrders, setAdminOrders] =
-    useState<AdminOrder[]>(ADMIN_ORDERS);
+  const [adminOrders, setAdminOrders] = useState<AdminOrder[]>(ADMIN_ORDERS);
 
   // kitchen state
   const [kitchenOrders, setKitchenOrders] =
@@ -1024,7 +1023,7 @@ function SaaSLanding({
                       </span>
                     </div>
                     <span className="text-xs text-muted-foreground">
-                      ~₹{r.avgSpend}/2
+                      ~৳{r.avgSpend}/2
                     </span>
                   </div>
                 </div>
@@ -1450,7 +1449,7 @@ function CustomerMenu({
                               )}
                             </div>
                             <p className="text-[11px] text-muted-foreground truncate">
-                              {item.category} · ₹{item.price}
+                              {item.category} · ৳{item.price}
                             </p>
                           </div>
                           <Plus className="w-4 h-4 text-primary" />
@@ -1466,7 +1465,6 @@ function CustomerMenu({
               )}
             </div>
           </div>
-
 
           {/* MOST ORDERED */}
           {activeCat === "All" && (
@@ -1498,7 +1496,7 @@ function CustomerMenu({
                       {item.name}
                     </div>
                     <div className="text-xs text-primary font-mono mt-0.5">
-                      ₹{item.price}
+                      ৳{item.price}
                     </div>
                   </button>
                 ))}
@@ -1540,7 +1538,7 @@ function CustomerMenu({
                         {item.desc}
                       </p>
                       <span className="text-xs text-primary font-mono font-medium">
-                        ₹{item.price}
+                        ৳{item.price}
                       </span>
                     </div>
                     <div className="shrink-0">
@@ -1636,7 +1634,7 @@ function CustomerMenu({
                     </p>
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-sm text-primary font-mono font-semibold">
-                        ₹{item.price}
+                        ৳{item.price}
                       </span>
                       {getQty(item.id) > 0 ? (
                         <div className="flex items-center gap-2">
@@ -1743,7 +1741,7 @@ function CustomerMenu({
               </span>
               <span className="font-medium text-sm">View Cart</span>
             </div>
-            <span className="font-mono font-semibold">₹{cartTotal}</span>
+            <span className="font-mono font-semibold">৳{cartTotal}</span>
           </button>
         )}
 
@@ -1800,7 +1798,7 @@ function CustomerMenu({
                         {c.item.name}
                       </div>
                       <div className="text-xs text-primary font-mono">
-                        ₹{c.item.price} × {c.qty}
+                        ৳{c.item.price} × {c.qty}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -1828,19 +1826,19 @@ function CustomerMenu({
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-muted-foreground">Subtotal</span>
                   <span className="font-mono text-foreground">
-                    ₹{cartTotal}
+                    ৳{cartTotal}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm mb-3">
                   <span className="text-muted-foreground">Taxes & charges</span>
                   <span className="font-mono text-foreground">
-                    ₹{Math.round(cartTotal * 0.05)}
+                    ৳{Math.round(cartTotal * 0.05)}
                   </span>
                 </div>
                 <div className="flex justify-between font-semibold mb-4">
                   <span>Total</span>
                   <span className="font-mono text-primary">
-                    ₹{cartTotal + Math.round(cartTotal * 0.05)}
+                    ৳{cartTotal + Math.round(cartTotal * 0.05)}
                   </span>
                 </div>
                 <button
@@ -1952,10 +1950,10 @@ function CustomerMenu({
                 <div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-xl font-semibold font-mono text-primary">
-                      ₹{Math.round(selectedItem.price * 0.85)}
+                      ৳{Math.round(selectedItem.price * 0.85)}
                     </span>
                     <span className="text-sm font-mono text-muted-foreground line-through">
-                      ₹{selectedItem.price}
+                      ৳{selectedItem.price}
                     </span>
                   </div>
                   <span className="text-xs text-emerald-400 font-medium">
@@ -2064,7 +2062,7 @@ function AdminDashboard({
   const topMetrics = [
     {
       label: "Today's Revenue",
-      value: "₹42,380",
+      value: "৳42,380",
       sub: "+12% vs yesterday",
       icon: DollarSign,
       color: "text-emerald-600",
@@ -2085,7 +2083,7 @@ function AdminDashboard({
     },
     {
       label: "Avg Order Value",
-      value: "₹681",
+      value: "৳681",
       sub: "+8% this week",
       icon: TrendingUp,
       color: "text-primary",
@@ -2164,7 +2162,13 @@ function AdminDashboard({
     const table = TABLES_DATA.find((t) => t.id === id);
     const emptyTables = [2, 4, 8, 13];
     const alert =
-      id === 5 ? "waiter" : id === 12 ? "bill" : waiterCalled && id === 7 ? "waiter" : null;
+      id === 5
+        ? "waiter"
+        : id === 12
+          ? "bill"
+          : waiterCalled && id === 7
+            ? "waiter"
+            : null;
     const isEmpty = emptyTables.includes(id) || table?.status === "available";
 
     return {
@@ -2182,14 +2186,23 @@ function AdminDashboard({
   const selectedFloorTable = diningFloorTables.find(
     (table) => table.id === selectedTable,
   );
-  const busyTables = diningFloorTables.filter((table) => table.status === "busy");
-  const emptyTables = diningFloorTables.filter((table) => table.status === "empty");
-  const alertTables = diningFloorTables.filter((table) => table.status === "alert");
+  const busyTables = diningFloorTables.filter(
+    (table) => table.status === "busy",
+  );
+  const emptyTables = diningFloorTables.filter(
+    (table) => table.status === "empty",
+  );
+  const alertTables = diningFloorTables.filter(
+    (table) => table.status === "alert",
+  );
   const occupiedSeats = diningFloorTables.reduce(
     (sum, table) => sum + table.guests,
     0,
   );
-  const totalSeats = diningFloorTables.reduce((sum, table) => sum + table.cap, 0);
+  const totalSeats = diningFloorTables.reduce(
+    (sum, table) => sum + table.cap,
+    0,
+  );
   const occupancyPct = Math.round((occupiedSeats / totalSeats) * 100);
   const floorRevenue = diningFloorTables.reduce(
     (sum, table) => sum + table.value,
@@ -2201,7 +2214,7 @@ function AdminDashboard({
       title: table.alert === "bill" ? "Bill requested" : "Waiter requested",
       desc:
         table.alert === "bill"
-          ? `Current bill ₹${table.value}`
+          ? `Current bill ৳${table.value}`
           : table.id === 7 && waiterRequest
             ? waiterRequest
             : `${table.guests || table.cap} guests need staff`,
@@ -2222,27 +2235,75 @@ function AdminDashboard({
 
   const analyticsData = {
     Daily: {
-      revenue: "₹42,380",
-      profit: "₹13,920",
-      cost: "₹28,460",
+      revenue: "৳42,380",
+      profit: "৳13,920",
+      cost: "৳28,460",
       customers: 142,
-      avgOrder: "₹681",
+      avgOrder: "৳681",
       margin: 33,
       revenueTrend: [
-        { label: "11 AM", value: 18, amount: "₹2.8K", orders: 9, profit: "₹920" },
-        { label: "12 PM", value: 24, amount: "₹4.1K", orders: 14, profit: "₹1.3K" },
-        { label: "1 PM", value: 31, amount: "₹5.4K", orders: 18, profit: "₹1.8K" },
-        { label: "3 PM", value: 28, amount: "₹4.7K", orders: 15, profit: "₹1.4K" },
-        { label: "6 PM", value: 42, amount: "₹7.2K", orders: 24, profit: "₹2.3K" },
-        { label: "8 PM", value: 57, amount: "₹9.8K", orders: 31, profit: "₹3.2K" },
-        { label: "9 PM", value: 69, amount: "₹11.6K", orders: 37, profit: "₹3.9K" },
-        { label: "10 PM", value: 64, amount: "₹10.7K", orders: 34, profit: "₹3.5K" },
+        {
+          label: "11 AM",
+          value: 18,
+          amount: "৳2.8K",
+          orders: 9,
+          profit: "৳920",
+        },
+        {
+          label: "12 PM",
+          value: 24,
+          amount: "৳4.1K",
+          orders: 14,
+          profit: "৳1.3K",
+        },
+        {
+          label: "1 PM",
+          value: 31,
+          amount: "৳5.4K",
+          orders: 18,
+          profit: "৳1.8K",
+        },
+        {
+          label: "3 PM",
+          value: 28,
+          amount: "৳4.7K",
+          orders: 15,
+          profit: "৳1.4K",
+        },
+        {
+          label: "6 PM",
+          value: 42,
+          amount: "৳7.2K",
+          orders: 24,
+          profit: "৳2.3K",
+        },
+        {
+          label: "8 PM",
+          value: 57,
+          amount: "৳9.8K",
+          orders: 31,
+          profit: "৳3.2K",
+        },
+        {
+          label: "9 PM",
+          value: 69,
+          amount: "৳11.6K",
+          orders: 37,
+          profit: "৳3.9K",
+        },
+        {
+          label: "10 PM",
+          value: 64,
+          amount: "৳10.7K",
+          orders: 34,
+          profit: "৳3.5K",
+        },
       ],
       customerTrend: [22, 28, 34, 31, 48, 64, 78, 72],
       topProducts: [
-        { name: "Chicken Biryani", value: 95, revenue: "₹13,566" },
-        { name: "Garlic Naan", value: 88, revenue: "₹7,742" },
-        { name: "Butter Chicken", value: 78, revenue: "₹9,074" },
+        { name: "Chicken Biryani", value: 95, revenue: "৳13,566" },
+        { name: "Garlic Naan", value: 88, revenue: "৳7,742" },
+        { name: "Butter Chicken", value: 78, revenue: "৳9,074" },
       ],
       badProducts: [
         {
@@ -2258,10 +2319,10 @@ function AdminDashboard({
       ],
       payments: { cash: 38, online: 62 },
       categories: [
-        { name: "Mains", pct: 92, revenue: "₹18.4K" },
-        { name: "Breads", pct: 74, revenue: "₹8.2K" },
-        { name: "Drinks", pct: 48, revenue: "₹4.1K" },
-        { name: "Desserts", pct: 35, revenue: "₹2.8K" },
+        { name: "Mains", pct: 92, revenue: "৳18.4K" },
+        { name: "Breads", pct: 74, revenue: "৳8.2K" },
+        { name: "Drinks", pct: 48, revenue: "৳4.1K" },
+        { name: "Desserts", pct: 35, revenue: "৳2.8K" },
       ],
       aiActions: [
         "Push high-margin drinks with biryani combos tonight.",
@@ -2270,26 +2331,68 @@ function AdminDashboard({
       ],
     },
     Weekly: {
-      revenue: "₹2,84,600",
-      profit: "₹94,380",
-      cost: "₹1,90,220",
+      revenue: "৳2,84,600",
+      profit: "৳94,380",
+      cost: "৳1,90,220",
       customers: 934,
-      avgOrder: "₹681",
+      avgOrder: "৳681",
       margin: 34,
       revenueTrend: [
-        { label: "Mon", value: 46, amount: "₹31K", orders: 112, profit: "₹9.8K" },
-        { label: "Tue", value: 52, amount: "₹36K", orders: 126, profit: "₹11.4K" },
-        { label: "Wed", value: 61, amount: "₹42K", orders: 141, profit: "₹13.1K" },
-        { label: "Thu", value: 58, amount: "₹39K", orders: 134, profit: "₹12.7K" },
-        { label: "Fri", value: 72, amount: "₹50K", orders: 162, profit: "₹16.5K" },
-        { label: "Sat", value: 88, amount: "₹61K", orders: 188, profit: "₹20.4K" },
-        { label: "Sun", value: 96, amount: "₹67K", orders: 171, profit: "₹22.4K" },
+        {
+          label: "Mon",
+          value: 46,
+          amount: "৳31K",
+          orders: 112,
+          profit: "৳9.8K",
+        },
+        {
+          label: "Tue",
+          value: 52,
+          amount: "৳36K",
+          orders: 126,
+          profit: "৳11.4K",
+        },
+        {
+          label: "Wed",
+          value: 61,
+          amount: "৳42K",
+          orders: 141,
+          profit: "৳13.1K",
+        },
+        {
+          label: "Thu",
+          value: 58,
+          amount: "৳39K",
+          orders: 134,
+          profit: "৳12.7K",
+        },
+        {
+          label: "Fri",
+          value: 72,
+          amount: "৳50K",
+          orders: 162,
+          profit: "৳16.5K",
+        },
+        {
+          label: "Sat",
+          value: 88,
+          amount: "৳61K",
+          orders: 188,
+          profit: "৳20.4K",
+        },
+        {
+          label: "Sun",
+          value: 96,
+          amount: "৳67K",
+          orders: 171,
+          profit: "৳22.4K",
+        },
       ],
       customerTrend: [55, 62, 68, 64, 78, 90, 84],
       topProducts: [
-        { name: "Chicken Biryani", value: 100, revenue: "₹1,13,316" },
-        { name: "Butter Chicken", value: 78, revenue: "₹80,619" },
-        { name: "Paneer Tikka", value: 60, revenue: "₹49,722" },
+        { name: "Chicken Biryani", value: 100, revenue: "৳1,13,316" },
+        { name: "Butter Chicken", value: 78, revenue: "৳80,619" },
+        { name: "Paneer Tikka", value: 60, revenue: "৳49,722" },
       ],
       badProducts: [
         {
@@ -2305,10 +2408,10 @@ function AdminDashboard({
       ],
       payments: { cash: 31, online: 69 },
       categories: [
-        { name: "Mains", pct: 94, revenue: "₹1.32L" },
-        { name: "Biryani", pct: 86, revenue: "₹91K" },
-        { name: "Breads", pct: 66, revenue: "₹44K" },
-        { name: "Drinks", pct: 42, revenue: "₹22K" },
+        { name: "Mains", pct: 94, revenue: "৳1.32L" },
+        { name: "Biryani", pct: 86, revenue: "৳91K" },
+        { name: "Breads", pct: 66, revenue: "৳44K" },
+        { name: "Drinks", pct: 42, revenue: "৳22K" },
       ],
       aiActions: [
         "Run a weekday family combo to lift Monday to Wednesday revenue.",
@@ -2317,29 +2420,77 @@ function AdminDashboard({
       ],
     },
     Monthly: {
-      revenue: "₹11,42,800",
-      profit: "₹3,94,700",
-      cost: "₹7,48,100",
+      revenue: "৳11,42,800",
+      profit: "৳3,94,700",
+      cost: "৳7,48,100",
       customers: 4180,
-      avgOrder: "₹704",
+      avgOrder: "৳704",
       margin: 35,
       revenueTrend: [
-        { label: "W1", value: 38, amount: "₹82K", orders: 314, profit: "₹27K" },
-        { label: "W2", value: 54, amount: "₹1.04L", orders: 382, profit: "₹35K" },
-        { label: "W3", value: 49, amount: "₹96K", orders: 361, profit: "₹31K" },
-        { label: "W4", value: 62, amount: "₹1.18L", orders: 428, profit: "₹40K" },
-        { label: "W5", value: 71, amount: "₹1.34L", orders: 476, profit: "₹45K" },
-        { label: "W6", value: 68, amount: "₹1.28L", orders: 451, profit: "₹43K" },
-        { label: "W7", value: 82, amount: "₹1.52L", orders: 523, profit: "₹52K" },
-        { label: "W8", value: 91, amount: "₹1.71L", orders: 590, profit: "₹59K" },
-        { label: "W9", value: 86, amount: "₹1.62L", orders: 558, profit: "₹55K" },
-        { label: "W10", value: 98, amount: "₹1.86L", orders: 697, profit: "₹64K" },
+        { label: "W1", value: 38, amount: "৳82K", orders: 314, profit: "৳27K" },
+        {
+          label: "W2",
+          value: 54,
+          amount: "৳1.04L",
+          orders: 382,
+          profit: "৳35K",
+        },
+        { label: "W3", value: 49, amount: "৳96K", orders: 361, profit: "৳31K" },
+        {
+          label: "W4",
+          value: 62,
+          amount: "৳1.18L",
+          orders: 428,
+          profit: "৳40K",
+        },
+        {
+          label: "W5",
+          value: 71,
+          amount: "৳1.34L",
+          orders: 476,
+          profit: "৳45K",
+        },
+        {
+          label: "W6",
+          value: 68,
+          amount: "৳1.28L",
+          orders: 451,
+          profit: "৳43K",
+        },
+        {
+          label: "W7",
+          value: 82,
+          amount: "৳1.52L",
+          orders: 523,
+          profit: "৳52K",
+        },
+        {
+          label: "W8",
+          value: 91,
+          amount: "৳1.71L",
+          orders: 590,
+          profit: "৳59K",
+        },
+        {
+          label: "W9",
+          value: 86,
+          amount: "৳1.62L",
+          orders: 558,
+          profit: "৳55K",
+        },
+        {
+          label: "W10",
+          value: 98,
+          amount: "৳1.86L",
+          orders: 697,
+          profit: "৳64K",
+        },
       ],
       customerTrend: [42, 58, 54, 63, 70, 74, 80, 88, 83, 92],
       topProducts: [
-        { name: "Chicken Biryani", value: 96, revenue: "₹4.4L" },
-        { name: "Butter Chicken", value: 82, revenue: "₹3.1L" },
-        { name: "Garlic Naan", value: 74, revenue: "₹1.2L" },
+        { name: "Chicken Biryani", value: 96, revenue: "৳4.4L" },
+        { name: "Butter Chicken", value: 82, revenue: "৳3.1L" },
+        { name: "Garlic Naan", value: 74, revenue: "৳1.2L" },
       ],
       badProducts: [
         {
@@ -2355,10 +2506,10 @@ function AdminDashboard({
       ],
       payments: { cash: 27, online: 73 },
       categories: [
-        { name: "Mains", pct: 91, revenue: "₹5.2L" },
-        { name: "Biryani", pct: 84, revenue: "₹3.7L" },
-        { name: "Starters", pct: 62, revenue: "₹1.6L" },
-        { name: "Desserts", pct: 38, revenue: "₹74K" },
+        { name: "Mains", pct: 91, revenue: "৳5.2L" },
+        { name: "Biryani", pct: 84, revenue: "৳3.7L" },
+        { name: "Starters", pct: 62, revenue: "৳1.6L" },
+        { name: "Desserts", pct: 38, revenue: "৳74K" },
       ],
       aiActions: [
         "Create a premium biryani upsell for high-value weekends.",
@@ -2367,31 +2518,103 @@ function AdminDashboard({
       ],
     },
     Yearly: {
-      revenue: "₹1.38Cr",
-      profit: "₹47.2L",
-      cost: "₹90.8L",
+      revenue: "৳1.38Cr",
+      profit: "৳47.2L",
+      cost: "৳90.8L",
       customers: 48700,
-      avgOrder: "₹718",
+      avgOrder: "৳718",
       margin: 34,
       revenueTrend: [
-        { label: "Jan", value: 48, amount: "₹7.8L", orders: 3110, profit: "₹2.5L" },
-        { label: "Feb", value: 52, amount: "₹8.4L", orders: 3290, profit: "₹2.8L" },
-        { label: "Mar", value: 57, amount: "₹9.2L", orders: 3480, profit: "₹3.1L" },
-        { label: "Apr", value: 63, amount: "₹10.1L", orders: 3710, profit: "₹3.4L" },
-        { label: "May", value: 69, amount: "₹11.2L", orders: 3980, profit: "₹3.8L" },
-        { label: "Jun", value: 73, amount: "₹12.1L", orders: 4210, profit: "₹4.1L" },
-        { label: "Jul", value: 78, amount: "₹12.9L", orders: 4380, profit: "₹4.4L" },
-        { label: "Aug", value: 82, amount: "₹13.5L", orders: 4520, profit: "₹4.6L" },
-        { label: "Sep", value: 88, amount: "₹14.6L", orders: 4710, profit: "₹5.0L" },
-        { label: "Oct", value: 92, amount: "₹15.2L", orders: 4860, profit: "₹5.2L" },
-        { label: "Nov", value: 96, amount: "₹15.8L", orders: 5020, profit: "₹5.4L" },
-        { label: "Dec", value: 100, amount: "₹16.4L", orders: 5430, profit: "₹5.8L" },
+        {
+          label: "Jan",
+          value: 48,
+          amount: "৳7.8L",
+          orders: 3110,
+          profit: "৳2.5L",
+        },
+        {
+          label: "Feb",
+          value: 52,
+          amount: "৳8.4L",
+          orders: 3290,
+          profit: "৳2.8L",
+        },
+        {
+          label: "Mar",
+          value: 57,
+          amount: "৳9.2L",
+          orders: 3480,
+          profit: "৳3.1L",
+        },
+        {
+          label: "Apr",
+          value: 63,
+          amount: "৳10.1L",
+          orders: 3710,
+          profit: "৳3.4L",
+        },
+        {
+          label: "May",
+          value: 69,
+          amount: "৳11.2L",
+          orders: 3980,
+          profit: "৳3.8L",
+        },
+        {
+          label: "Jun",
+          value: 73,
+          amount: "৳12.1L",
+          orders: 4210,
+          profit: "৳4.1L",
+        },
+        {
+          label: "Jul",
+          value: 78,
+          amount: "৳12.9L",
+          orders: 4380,
+          profit: "৳4.4L",
+        },
+        {
+          label: "Aug",
+          value: 82,
+          amount: "৳13.5L",
+          orders: 4520,
+          profit: "৳4.6L",
+        },
+        {
+          label: "Sep",
+          value: 88,
+          amount: "৳14.6L",
+          orders: 4710,
+          profit: "৳5.0L",
+        },
+        {
+          label: "Oct",
+          value: 92,
+          amount: "৳15.2L",
+          orders: 4860,
+          profit: "৳5.2L",
+        },
+        {
+          label: "Nov",
+          value: 96,
+          amount: "৳15.8L",
+          orders: 5020,
+          profit: "৳5.4L",
+        },
+        {
+          label: "Dec",
+          value: 100,
+          amount: "৳16.4L",
+          orders: 5430,
+          profit: "৳5.8L",
+        },
       ],
       customerTrend: [44, 50, 53, 59, 66, 72, 74, 80, 84, 91, 93, 97],
       topProducts: [
-        { name: "Chicken Biryani", value: 98, revenue: "₹48L" },
-        { name: "Butter Chicken", value: 83, revenue: "₹31L" },
-        { name: "Paneer Tikka", value: 72, revenue: "₹19L" },
+        { name: "Chicken Biryani", value: 98, revenue: "৳48L" },
+        { name: "Butter Chicken", value: 83, revenue: "৳31L" },
+        { name: "Paneer Tikka", value: 72, revenue: "৳19L" },
       ],
       badProducts: [
         {
@@ -2407,10 +2630,10 @@ function AdminDashboard({
       ],
       payments: { cash: 24, online: 76 },
       categories: [
-        { name: "Mains", pct: 93, revenue: "₹58L" },
-        { name: "Biryani", pct: 88, revenue: "₹42L" },
-        { name: "Starters", pct: 64, revenue: "₹19L" },
-        { name: "Drinks", pct: 51, revenue: "₹11L" },
+        { name: "Mains", pct: 93, revenue: "৳58L" },
+        { name: "Biryani", pct: 88, revenue: "৳42L" },
+        { name: "Starters", pct: 64, revenue: "৳19L" },
+        { name: "Drinks", pct: 51, revenue: "৳11L" },
       ],
       aiActions: [
         "Open second cloud-kitchen lane for biryani in high-demand areas.",
@@ -2427,10 +2650,15 @@ function AdminDashboard({
   );
   const maxCustomerTrend = Math.max(...analytics.customerTrend, 1);
   const foodProfitRows = [
-    { item: "Chicken Biryani", sold: 284, sales: "₹1,13,316", profit: "₹38,420" },
-    { item: "Butter Chicken", sold: 231, sales: "₹80,619", profit: "₹28,940" },
-    { item: "Garlic Naan", sold: 398, sales: "₹31,442", profit: "₹18,120" },
-    { item: "Paneer Tikka", sold: 178, sales: "₹49,722", profit: "₹16,870" },
+    {
+      item: "Chicken Biryani",
+      sold: 284,
+      sales: "৳1,13,316",
+      profit: "৳38,420",
+    },
+    { item: "Butter Chicken", sold: 231, sales: "৳80,619", profit: "৳28,940" },
+    { item: "Garlic Naan", sold: 398, sales: "৳31,442", profit: "৳18,120" },
+    { item: "Paneer Tikka", sold: 178, sales: "৳49,722", profit: "৳16,870" },
   ];
 
   return (
@@ -2609,7 +2837,7 @@ function AdminDashboard({
                           Floor Bill
                         </p>
                         <p className="font-mono text-sm text-primary">
-                          ₹{floorRevenue}
+                          ৳{floorRevenue}
                         </p>
                       </div>
                       <div className="rounded-xl bg-[#131C2F] p-3">
@@ -2622,70 +2850,75 @@ function AdminDashboard({
                   </aside>
 
                   <div className="mx-auto grid w-full max-w-[570px] grid-cols-4 content-center justify-items-center gap-x-8 gap-y-3">
-                  {diningFloorTables.map((table) => {
-                    const isSelected = selectedTable === table.id;
-                    const isAlert = table.status === "alert";
-                    const isEmpty = table.status === "empty";
-                    return (
-                      <div key={table.id} className="relative flex justify-center">
-                        <button
-                        key={table.id}
-                        onClick={() =>
-                          setSelectedTable(isSelected ? null : table.id)
-                        }
-                        className={`h-[120px] w-[120px] rounded-full flex flex-col items-center justify-center transition-all ${
-                          isSelected ? "scale-105 ring-2 ring-primary" : ""
-                        } ${
-                          isAlert
-                            ? "animate-pulse border-2 border-red-700/70 bg-red-950/35 shadow-2xl shadow-red-950/40"
-                            : isEmpty
-                              ? "bg-surface-variant/20 border border-outline-variant/30 opacity-40 hover:opacity-100"
-                              : "border border-primary/60 bg-primary/10 shadow-lg shadow-primary/5 hover:scale-105"
-                        }`}
-                      >
-                        {isAlert ? (
-                          <>
-                            {table.alert === "bill" ? (
-                              <DollarSign className="w-5 h-5 text-primary mb-1" />
+                    {diningFloorTables.map((table) => {
+                      const isSelected = selectedTable === table.id;
+                      const isAlert = table.status === "alert";
+                      const isEmpty = table.status === "empty";
+                      return (
+                        <div
+                          key={table.id}
+                          className="relative flex justify-center"
+                        >
+                          <button
+                            key={table.id}
+                            onClick={() =>
+                              setSelectedTable(isSelected ? null : table.id)
+                            }
+                            className={`h-[120px] w-[120px] rounded-full flex flex-col items-center justify-center transition-all ${
+                              isSelected ? "scale-105 ring-2 ring-primary" : ""
+                            } ${
+                              isAlert
+                                ? "animate-pulse border-2 border-red-700/70 bg-red-950/35 shadow-2xl shadow-red-950/40"
+                                : isEmpty
+                                  ? "bg-surface-variant/20 border border-outline-variant/30 opacity-40 hover:opacity-100"
+                                  : "border border-primary/60 bg-primary/10 shadow-lg shadow-primary/5 hover:scale-105"
+                            }`}
+                          >
+                            {isAlert ? (
+                              <>
+                                {table.alert === "bill" ? (
+                                  <DollarSign className="w-5 h-5 text-primary mb-1" />
+                                ) : (
+                                  <Bell className="w-5 h-5 text-red-400 mb-1" />
+                                )}
+                                <span
+                                  className={`text-xs font-bold ${table.alert === "bill" ? "text-primary" : "text-red-400"}`}
+                                >
+                                  T{table.id}
+                                </span>
+                                <span
+                                  className={`text-[8px] uppercase tracking-tighter ${table.alert === "bill" ? "text-primary" : "text-red-400"}`}
+                                >
+                                  {table.alert === "bill"
+                                    ? "BILL REQ"
+                                    : "WAITER!"}
+                                </span>
+                              </>
+                            ) : isEmpty ? (
+                              <>
+                                <span className="text-[10px] uppercase font-medium">
+                                  T{table.id}
+                                </span>
+                                <Plus className="w-3 h-3 mt-1" />
+                              </>
                             ) : (
-                              <Bell className="w-5 h-5 text-red-400 mb-1" />
+                              <>
+                                <span className="text-[10px] opacity-60 uppercase font-medium">
+                                  T{table.id}
+                                </span>
+                                <span
+                                  className="text-lg text-primary"
+                                  style={{ fontFamily: "var(--font-display)" }}
+                                >
+                                  {table.cap}p
+                                </span>
+                              </>
                             )}
-                            <span
-                              className={`text-xs font-bold ${table.alert === "bill" ? "text-primary" : "text-red-400"}`}
-                            >
-                              T{table.id}
-                            </span>
-                            <span
-                              className={`text-[8px] uppercase tracking-tighter ${table.alert === "bill" ? "text-primary" : "text-red-400"}`}
-                            >
-                              {table.alert === "bill" ? "BILL REQ" : "WAITER!"}
-                            </span>
-                          </>
-                        ) : isEmpty ? (
-                          <>
-                            <span className="text-[10px] uppercase font-medium">
-                              T{table.id}
-                            </span>
-                            <Plus className="w-3 h-3 mt-1" />
-                          </>
-                        ) : (
-                          <>
-                            <span className="text-[10px] opacity-60 uppercase font-medium">
-                              T{table.id}
-                            </span>
-                            <span
-                              className="text-lg text-primary"
-                              style={{ fontFamily: "var(--font-display)" }}
-                            >
-                              {table.cap}p
-                            </span>
-                          </>
-                        )}
-                      </button>
-                      </div>
-                    );
-                  })}
-                </div>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
 
                   <aside className="rounded-2xl border border-white/10 bg-[#0B1326]/70 p-4 shadow-xl">
                     <div className="flex items-center justify-between">
@@ -2715,10 +2948,14 @@ function AdminDashboard({
                           >
                             <div className="flex items-start gap-3">
                               <div className="mt-0.5 rounded-lg bg-white/5 p-2">
-                                <signal.icon className={`w-4 h-4 ${signal.tone}`} />
+                                <signal.icon
+                                  className={`w-4 h-4 ${signal.tone}`}
+                                />
                               </div>
                               <div className="min-w-0">
-                                <p className={`text-sm font-medium ${signal.tone}`}>
+                                <p
+                                  className={`text-sm font-medium ${signal.tone}`}
+                                >
                                   T{signal.table} · {signal.title}
                                 </p>
                                 <p className="mt-1 text-xs text-muted-foreground">
@@ -2778,13 +3015,15 @@ function AdminDashboard({
                               "Order",
                               selectedFloorTable.order ?? "No active order",
                             ],
-                            ["Current Bill", `₹${selectedFloorTable.value}`],
+                            ["Current Bill", `৳${selectedFloorTable.value}`],
                           ].map(([label, value]) => (
                             <div
                               key={label}
                               className="flex justify-between border-b border-border pb-2 last:border-0 last:pb-0"
                             >
-                              <span className="text-muted-foreground">{label}</span>
+                              <span className="text-muted-foreground">
+                                {label}
+                              </span>
                               <span className="font-mono text-foreground text-right">
                                 {value}
                               </span>
@@ -2812,8 +3051,8 @@ function AdminDashboard({
                       </p>
                     </div> */}
                   </aside>
+                </div>
               </div>
-            </div>
             </div>
           )}
 
@@ -2847,7 +3086,9 @@ function AdminDashboard({
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
                           <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center">
-                            <column.icon className={`w-4 h-4 ${column.accent}`} />
+                            <column.icon
+                              className={`w-4 h-4 ${column.accent}`}
+                            />
                           </div>
                           <div>
                             <h3 className="font-semibold text-foreground text-sm">
@@ -2872,7 +3113,9 @@ function AdminDashboard({
                             <div
                               key={o.id}
                               onClick={() =>
-                                onSelectOrder(selectedOrder === o.id ? null : o.id)
+                                onSelectOrder(
+                                  selectedOrder === o.id ? null : o.id,
+                                )
                               }
                               className={`relative rounded-2xl border-2 p-3 cursor-pointer transition-all hover:shadow-xl ${selectedOrder === o.id ? "z-[80] border-primary bg-primary/10" : `${orderStatusColors[o.status].bg} hover:border-primary/70`}`}
                             >
@@ -2897,14 +3140,16 @@ function AdminDashboard({
                                   {o.items} items · {o.ago}
                                 </span>
                                 <span className="font-mono font-medium text-foreground">
-                                  ₹{o.value}
+                                  ৳{o.value}
                                 </span>
                               </div>
                               <div className="mt-3 flex items-center justify-between">
                                 <span
                                   className={`text-xs px-2 py-1 rounded-full font-medium ${o.mode === "pay-first" ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"}`}
                                 >
-                                  {o.mode === "pay-first" ? "Paid" : "Pay later"}
+                                  {o.mode === "pay-first"
+                                    ? "Paid"
+                                    : "Pay later"}
                                 </span>
                                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                                   <Clock className="w-3 h-3" />
@@ -2968,7 +3213,9 @@ function AdminDashboard({
                                       Payment
                                     </p>
                                     <p className="text-sm font-mono text-foreground">
-                                      {o.mode === "pay-first" ? "Paid" : "Later"}
+                                      {o.mode === "pay-first"
+                                        ? "Paid"
+                                        : "Later"}
                                     </p>
                                   </div>
                                 </div>
@@ -3001,16 +3248,18 @@ function AdminDashboard({
                                 <div className="border-t border-border pt-3 space-y-1">
                                   <div className="flex justify-between text-xs text-muted-foreground">
                                     <span>Subtotal</span>
-                                    <span className="font-mono">₹{o.value}</span>
+                                    <span className="font-mono">
+                                      ৳{o.value}
+                                    </span>
                                   </div>
                                   <div className="flex justify-between text-xs text-muted-foreground">
                                     <span>Taxes & charges</span>
-                                    <span className="font-mono">₹{tax}</span>
+                                    <span className="font-mono">৳{tax}</span>
                                   </div>
                                   <div className="flex justify-between text-sm font-semibold text-foreground">
                                     <span>Total</span>
                                     <span className="font-mono text-primary">
-                                      ₹{total}
+                                      ৳{total}
                                     </span>
                                   </div>
                                 </div>
@@ -3203,7 +3452,9 @@ function AdminDashboard({
                         className="group relative z-10 flex h-full flex-1 flex-col items-center justify-end"
                       >
                         <div className="pointer-events-none absolute bottom-[calc(100%+0.5rem)] hidden min-w-28 rounded-lg border border-primary/30 bg-[#0B1326] px-2 py-1 text-center shadow-xl group-hover:block">
-                          <p className="font-mono text-xs text-primary">{point.amount}</p>
+                          <p className="font-mono text-xs text-primary">
+                            {point.amount}
+                          </p>
                           <p className="text-[10px] text-muted-foreground">
                             {point.orders} orders
                           </p>
@@ -3244,7 +3495,9 @@ function AdminDashboard({
                           <span className="text-muted-foreground">
                             Slot {index + 1}
                           </span>
-                          <span className="font-mono text-foreground">{value}</span>
+                          <span className="font-mono text-foreground">
+                            {value}
+                          </span>
                         </div>
                         <div className="h-2 overflow-hidden rounded-full bg-muted">
                           <div
@@ -3396,7 +3649,9 @@ function AdminDashboard({
                         <span className="font-mono text-muted-foreground">
                           {row.sold}
                         </span>
-                        <span className="font-mono text-primary">{row.sales}</span>
+                        <span className="font-mono text-primary">
+                          {row.sales}
+                        </span>
                         <span className="font-mono text-emerald-400">
                           {row.profit}
                         </span>
@@ -3414,7 +3669,12 @@ function AdminDashboard({
                   </p>
                   {[
                     ["Cost", 66, analytics.cost, "bg-red-400"],
-                    ["Profit", analytics.margin, analytics.profit, "bg-primary"],
+                    [
+                      "Profit",
+                      analytics.margin,
+                      analytics.profit,
+                      "bg-primary",
+                    ],
                   ].map(([label, pct, value, color]) => (
                     <div key={label as string} className="mb-4">
                       <div className="mb-1 flex justify-between text-sm">
