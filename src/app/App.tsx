@@ -1998,9 +1998,9 @@ function CustomerMenu({
       </div>
 
       {/* CONTEXT LABEL */}
-      <div className="text-center mt-4 text-muted-foreground text-xs font-mono">
+      {/* <div className="text-center mt-4 text-muted-foreground text-xs font-mono">
         Customer view · Table 07 · Spice Garden
-      </div>
+      </div> */}
     </div>
   );
 }
